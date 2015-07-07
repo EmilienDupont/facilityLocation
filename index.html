@@ -8,15 +8,27 @@
                       TeX: { equationNumbers: {autoNumber: "AMS"} },
                       "HTML-CSS": { showMathMenu: false,
                                     scale: 90 }
-
                      });
 </script>
 <style>
 
 .client {
-  fill: blue;
+  fill: black;
   r: 3;
 }
+
+.c0 { fill: blue; stroke: #000099 }
+.c1 { fill: green; stroke: #009900 }
+.c2 { fill: red; stroke: #990000}
+.c3 { fill: yellow; stroke: #999900 }
+.c4 { fill: gray; stroke: #404040 }
+
+.v0 { fill: blue; }
+.v1 { fill: green; }
+.v2 { fill: red; }
+.v3 { fill: yellow; }
+.v4 { fill: gray; }
+
 
 </style>
 <body>
@@ -30,7 +42,7 @@
   <div id="container">
     <div class="section" id="intro">
       <h1>Facility Location</h1>
-        <subtitle>with integer programming and Gurobi</subtitle>
+        <subtitle>with quadratic programming and Gurobi</subtitle>
     </div>
 
     <div class="section" id="problem">
@@ -75,13 +87,20 @@ var svg = d3.select("#demoarea")
               .on("mousedown", addPoint);
 
 // Initial points
-var vertices = [[100,200],[150,300],[400,400]];
+var vertices = d3.range(10).map(function(d) {
+  return [Math.random() * width, Math.random() * height];
+});
+
+var facilities = [[170, 210], [530, 400], [300,200], [200, 420]];
 
 // G object for voronoi
 var pathG = svg.append("g");
 
 // G object for points
 var circleG = svg.append("g");
+
+// G object for facilities
+var facilitiesG = svg.append("g");
 
 circleG.selectAll("circle")
        .data(vertices)
@@ -91,8 +110,6 @@ circleG.selectAll("circle")
        .attr("cy", function(d) { return d[1]; })
        .attr("class", "client");
 
-redraw();
-
 function addPoint() {
   var point = d3.mouse(this);
   vertices.push(point);
@@ -100,23 +117,51 @@ function addPoint() {
          .attr("cx", point[0])
          .attr("cy", point[1])
          .attr("class", "client");
-  redraw();
-}
-
-function redraw() {
-  pathG.selectAll("path").remove("path");
-
-  pathG.selectAll("path")
-       .data(d3.geom.voronoi(vertices))
-       .enter()
-       .append("path")
-       .attr("d", polygon)
-       .attr("fill", "none")
-       .attr("stroke", "black");
 }
 
 // Function that actually joins the different points of polygon
 function polygon(d) {
   return "M" + d.join("L") + "Z";
+}
+
+function compute() {
+  facilitiesG.selectAll("circle").remove("circle");
+  
+  var faci = facilitiesG.selectAll("circle")
+             .data(facilities)
+             .enter()
+             .append("circle")
+             .attr("cx", function(d) { return d[0]; })
+             .attr("cy", function(d) { return d[1]; })
+             .attr("class", function(d, i) { return "c" + i; })
+             .attr("r",100)
+             .attr("stroke-width", 2);
+
+  faci.style("opacity", 0)
+      .style("stroke-opacity", 0)
+      .transition()
+      .style("opacity", 1)
+      .style("stroke-opacity", 1)
+      .attr("r", 6)
+      .duration(1000)
+      .delay(function(d, i) { return i*100 });
+  
+  pathG.selectAll("path").remove("path");
+
+  var voroPath = pathG.selectAll("path")
+                      .data(d3.geom.voronoi(facilities))
+                      .enter()
+                      .append("path")
+                      .attr("d", polygon)
+                      .attr("class", function(d, i) { return "v" + i; })
+                      .attr("stroke", "black")
+                      .attr("stroke-width", 2)
+                      .attr("stroke-opacity", 1);
+  
+  voroPath.style("opacity", 0)
+          .transition()
+          .style("opacity", .5)
+          .duration(1000)
+          .delay(700);
 }
 </script>
