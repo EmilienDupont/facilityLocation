@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<script>
+  MathJax.Hub.Config({
+                      tex2jax: {inlineMath: [['$', '$'], ['\\(','\\)']]},
+                      TeX: { equationNumbers: {autoNumber: "AMS"} },
+                      "HTML-CSS": { showMathMenu: false,
+                                    scale: 90 }
+
+                     });
+</script>
+<style>
+
+.client {
+  fill: blue;
+  r: 3;
+}
+
+</style>
+<body>
+  <ul id="nav">
+    <li class="current"><a href="#intro">Intro</a></li>
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#model">Model</a></li>
+    <li><a href="#implementation">Implementation</a></li>
+    <li><a href="#demo">Live Demo</a></li>
+  </ul>
+  <div id="container">
+    <div class="section" id="intro">
+      <h1>Facility Location</h1>
+        <subtitle>with integer programming and Gurobi</subtitle>
+    </div>
+
+    <div class="section" id="problem">
+      <h2><a href="#problem" name="problem">Problem Description</a></h2>
+      Problem description goes here
+      <p>
+      </p>
+    </div>
+    <div class="section" id="model">
+      <h2><a href="#model" name="model">Mathematical Model</a></h2>
+
+      <p>Model description goes here.</p>
+
+    </div>
+    <div class="section" id="implementation">
+      <h2><a href="#implementation" name="implementation">Implementation</a></h2>
+      <p>Below is the full implementation of the model (and the associated data) in
+        Gurobi's Python interface:
+      </p>
+      <pre>
+      code
+      </pre>
+    </div>
+    <div class="section" id="demo">
+      <h2><a href="#demo" name="demo">Live Demo</a></h2>
+      <div id="demoarea">
+      </div>
+      <button onclick="compute()">Compute</button>
+    </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script>
+
+//Width and height
+var width = 800;
+var height = 500;
+
+var svg = d3.select("#demoarea")
+              .append("svg")
+              .attr("width", width)
+              .attr("height", height)
+              .on("mousedown", addPoint);
+
+// Initial points
+var vertices = [[100,200],[150,300],[400,400]];
+
+// G object for voronoi
+var pathG = svg.append("g");
+
+// G object for points
+var circleG = svg.append("g");
+
+circleG.selectAll("circle")
+       .data(vertices)
+       .enter()
+       .append("circle")
+       .attr("cx", function(d) { return d[0]; })
+       .attr("cy", function(d) { return d[1]; })
+       .attr("class", "client");
+
+redraw();
+
+function addPoint() {
+  var point = d3.mouse(this);
+  vertices.push(point);
+  circleG.append("circle")
+         .attr("cx", point[0])
+         .attr("cy", point[1])
+         .attr("class", "client");
+  redraw();
+}
+
+function redraw() {
+  pathG.selectAll("path").remove("path");
+
+  pathG.selectAll("path")
+       .data(d3.geom.voronoi(vertices))
+       .enter()
+       .append("path")
+       .attr("d", polygon)
+       .attr("fill", "none")
+       .attr("stroke", "black");
+}
+
+// Function that actually joins the different points of polygon
+function polygon(d) {
+  return "M" + d.join("L") + "Z";
+}
+</script>
