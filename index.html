@@ -195,9 +195,7 @@ function compute() {
                       .append("path")
                       .attr("d", polygon)
                       .attr("class", function(d, i) { return "v" + i; })
-                      .attr("stroke", "black")
-                      .attr("stroke-width", 2)
-                      .attr("stroke-opacity", 1);
+                      .attr("stroke-opacity", 0);
   
   voroPath.style("opacity", 0)
           .transition()
