@@ -13,7 +13,9 @@
 <style>
 
 .client {
-  fill: black;
+  fill: white;
+  stroke: black;
+  stroke-width: 1;
   r: 3;
 }
 
@@ -96,6 +98,9 @@ var facilities = [[170, 210], [530, 400], [300,200], [200, 420]];
 // G object for voronoi
 var pathG = svg.append("g");
 
+// G object for animations
+var animationG = svg.append("g");
+
 // G object for points
 var circleG = svg.append("g");
 
@@ -117,6 +122,21 @@ function addPoint() {
          .attr("cx", point[0])
          .attr("cy", point[1])
          .attr("class", "client");
+  
+  // Add animation
+  animationG.selectAll("circle").remove("circle");
+  var anim = animationG.append("circle")
+                        .attr("cx", point[0])
+                        .attr("cy", point[1])
+                        .attr("r", 0)
+                        .attr("fill", "black");
+
+  anim.style("opacity", .5)
+      .transition()
+      .style("opacity", 0)
+      .attr("r", 20)
+      .duration(200)
+      .ease("out");
 }
 
 // Function that actually joins the different points of polygon
@@ -126,6 +146,7 @@ function polygon(d) {
 
 function compute() {
   facilitiesG.selectAll("circle").remove("circle");
+  animationG.selectAll("circle").remove("circle");
   
   var faci = facilitiesG.selectAll("circle")
              .data(facilities)
@@ -134,8 +155,18 @@ function compute() {
              .attr("cx", function(d) { return d[0]; })
              .attr("cy", function(d) { return d[1]; })
              .attr("class", function(d, i) { return "c" + i; })
-             .attr("r",100)
+             .attr("r",60)
              .attr("stroke-width", 2);
+  
+  var anim = animationG.selectAll("circle")
+             .data(facilities)
+             .enter()
+             .append("circle")
+             .attr("cx", function(d) { return d[0]; })
+             .attr("cy", function(d) { return d[1]; })
+             .attr("class", function(d, i) { return "c" + i; })
+             .attr("r",0)
+             .attr("stroke-width", 0);
 
   faci.style("opacity", 0)
       .style("stroke-opacity", 0)
@@ -143,8 +174,18 @@ function compute() {
       .style("opacity", 1)
       .style("stroke-opacity", 1)
       .attr("r", 6)
-      .duration(1000)
+      .duration(500)
       .delay(function(d, i) { return i*100 });
+  
+  anim.style("opacity", .5)
+      .style("stroke-opacity", .5)
+      .transition()
+      .style("opacity", 0)
+      .style("stroke-opacity", 0)
+      .attr("r", 30)
+      .duration(500)
+      .ease("out")
+      .delay(function(d, i) { return i*100 + 300});
   
   pathG.selectAll("path").remove("path");
 
@@ -162,6 +203,6 @@ function compute() {
           .transition()
           .style("opacity", .5)
           .duration(1000)
-          .delay(700);
+          .delay(1000);
 }
 </script>
