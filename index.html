@@ -15,7 +15,13 @@
 .client {
   fill: white;
   stroke: black;
-  stroke-width: 1;
+  stroke-width: 2;
+  r: 4;
+}
+
+.site {
+  fill: black;
+  opacity: 0.1;
   r: 3;
 }
 
@@ -69,7 +75,50 @@
         Gurobi's Python interface:
       </p>
       <pre>
-      code
+      ### ADD DATA ####
+      clients = []; facilities = []; charge = [];
+      
+      from gurobipy import *
+      import math
+      
+      def distance(a,b):
+        dx = a[0] - b[0]
+        dy = a[1] - b[1]
+        return math.sqrt(dx*dx + dy*dy)
+
+      numFacilities = len(facilities)
+      
+      numClients = len(clients)
+      
+      m = Model()
+      
+      # Add variables
+      x = {}
+      y = {}
+      d = {} # Distance matrix (not a variable)
+      
+      for j in range(numFacilities):
+          x[j] = m.addVar(vtype=GRB.BINARY, name="x%d" % j)
+      
+      for i in range(numClients):
+          for j in range(numFacilities):
+              y[(i,j)] = m.addVar(lb=0, vtype=GRB.CONTINUOUS, name="t%d,%d" % (i,j))
+              d[(i,j)] = distance(clients[i], facilities[j])
+      
+      m.update()
+      
+      # Add constraints
+      for i in range(numClients):
+          for j in range(numFacilities):
+              m.addConstr(y[(i,j)] <= x[j])
+      
+      for i in range(numClients):
+          m.addConstr(quicksum(y[(i,j)] for j in range(numFacilities)) == 1)
+      
+      m.setObjective( quicksum( charge[j]*x[j] + quicksum(d[(i,j)]*y[(i,j)] for i in range(numClients))
+                               for j in range(numFacilities) ), GRB.MINIMIZE)
+      
+      m.optimize()
       </pre>
     </div>
     <div class="section" id="demo">
@@ -97,13 +146,25 @@ var vertices = d3.range(10).map(function(d) {
   return [Math.random() * width, Math.random() * height];
 });
 
-var facilities = [[170, 210], [530, 400], [300,200], [200, 420]];
+// Potential sites for facilities
+var sites = [];
+var n = 10;
+for (var i = 1; i < n; i++) {
+  for (var j = 1; j < n; j++) {
+    sites.push([width*i/n, height*j/n]);
+  }
+}
+
+var charge = d3.range(sites.length).map(function(d) { return 200; });
 
 // G object for voronoi
 var pathG = svg.append("g");
 
 // G object for animations
 var animationG = svg.append("g");
+
+// G object for sites
+var sitesG = svg.append("g");
 
 // G object for points
 var circleG = svg.append("g");
@@ -118,6 +179,14 @@ circleG.selectAll("circle")
        .attr("cx", function(d) { return d[0]; })
        .attr("cy", function(d) { return d[1]; })
        .attr("class", "client");
+
+sitesG.selectAll("circle")
+       .data(sites)
+       .enter()
+       .append("circle")
+       .attr("cx", function(d) { return d[0]; })
+       .attr("cy", function(d) { return d[1]; })
+       .attr("class", "site");
 
 function addPoint() {
   var point = d3.mouse(this);
@@ -149,62 +218,86 @@ function polygon(d) {
 }
 
 function compute() {
-  facilitiesG.selectAll("circle").remove("circle");
-  animationG.selectAll("circle").remove("circle");
-  
-  var faci = facilitiesG.selectAll("circle")
-             .data(facilities)
-             .enter()
-             .append("circle")
-             .attr("cx", function(d) { return d[0]; })
-             .attr("cy", function(d) { return d[1]; })
-             .attr("class", function(d, i) { return "c" + i; })
-             .attr("r",60)
-             .attr("stroke-width", 2);
-  
-  var anim = animationG.selectAll("circle")
-             .data(facilities)
-             .enter()
-             .append("circle")
-             .attr("cx", function(d) { return d[0]; })
-             .attr("cy", function(d) { return d[1]; })
-             .attr("class", function(d, i) { return "c" + i; })
-             .attr("r",0)
-             .attr("stroke-width", 0);
-
-  faci.style("opacity", 0)
-      .style("stroke-opacity", 0)
-      .transition()
-      .style("opacity", 1)
-      .style("stroke-opacity", 1)
-      .attr("r", 6)
-      .duration(500)
-      .delay(function(d, i) { return i*100 });
-  
-  anim.style("opacity", .5)
-      .style("stroke-opacity", .5)
-      .transition()
-      .style("opacity", 0)
-      .style("stroke-opacity", 0)
-      .attr("r", 30)
-      .duration(500)
-      .ease("out")
-      .delay(function(d, i) { return i*100 + 300});
-  
-  pathG.selectAll("path").remove("path");
-
-  var voroPath = pathG.selectAll("path")
-                      .data(d3.geom.voronoi(facilities))
-                      .enter()
-                      .append("path")
-                      .attr("d", polygon)
-                      .attr("class", function(d, i) { return "v" + i; })
-                      .attr("stroke-opacity", 0);
-  
-  voroPath.style("opacity", 0)
-          .transition()
-          .style("opacity", .5)
-          .duration(1000)
-          .delay(1000);
+  d3.json('/resource')
+    .header('Content-Type', 'application/json')
+    .post(JSON.stringify({'clients': vertices,
+                          'facilities': sites,
+                          'charge': charge }), serverResponse);
 }
+
+function serverResponse(error, data) {
+   console.log('serverResponse');
+   console.log('data', data);
+   if (!error) {
+      if ('solution' in data) {
+          // Import solution and put it into correct format
+          var solution = data['solution'];
+          
+          var facilities = [];
+          
+          for (var i = 0; i < solution.length; i++) {
+            facilities.push(sites[solution[i]]);
+          }
+          
+          facilitiesG.selectAll("circle").remove("circle");
+          animationG.selectAll("circle").remove("circle");
+          
+          var faci = facilitiesG.selectAll("circle")
+                     .data(facilities)
+                     .enter()
+                     .append("circle")
+                     .attr("cx", function(d) { return d[0]; })
+                     .attr("cy", function(d) { return d[1]; })
+                     .attr("class", function(d, i) { return "c" + i % 5; })
+                     .attr("r",60)
+                     .attr("stroke-width", 2);
+          
+          var anim = animationG.selectAll("circle")
+                     .data(facilities)
+                     .enter()
+                     .append("circle")
+                     .attr("cx", function(d) { return d[0]; })
+                     .attr("cy", function(d) { return d[1]; })
+                     .attr("class", function(d, i) { return "c" + i % 5; })
+                     .attr("r",0)
+                     .attr("stroke-width", 0);
+        
+          faci.style("opacity", 0)
+              .style("stroke-opacity", 0)
+              .transition()
+              .style("opacity", 1)
+              .style("stroke-opacity", 1)
+              .attr("r", 6)
+              .duration(500)
+              .delay(function(d, i) { return i*100 });
+          
+          anim.style("opacity", .5)
+              .style("stroke-opacity", .5)
+              .transition()
+              .style("opacity", 0)
+              .style("stroke-opacity", 0)
+              .attr("r", 30)
+              .duration(500)
+              .ease("out")
+              .delay(function(d, i) { return i*100 + 300});
+          
+          pathG.selectAll("path").remove("path");
+        
+          var voroPath = pathG.selectAll("path")
+                              .data(d3.geom.voronoi(facilities))
+                              .enter()
+                              .append("path")
+                              .attr("d", polygon)
+                              .attr("class", function(d, i) { return "v" + i % 5; })
+                              .attr("stroke-opacity", 0);
+          
+          voroPath.style("opacity", 0)
+                  .transition()
+                  .style("opacity", .5)
+                  .duration(1000)
+                  .delay(1000);
+        }
+      }
+}
+
 </script>
