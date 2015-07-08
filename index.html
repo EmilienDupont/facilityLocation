@@ -50,13 +50,14 @@
   <div id="container">
     <div class="section" id="intro">
       <h1>Facility Location</h1>
-        <subtitle>with quadratic programming and Gurobi</subtitle>
+        <subtitle>with integer programming and Gurobi</subtitle>
     </div>
 
     <div class="section" id="problem">
       <h2><a href="#problem" name="problem">Problem Description</a></h2>
       Problem description goes here
       <p>
+        # Source of optimization problem: Facility Location in Supply Chain
         Where to build new hospitals so that distance to drive from different places is minimized.
       </p>
     </div>
@@ -65,8 +66,54 @@
 
       <p>Model description goes here.</p>
       
-      <p> each point within colored region will be nearest the facility of the same color (note that this
-      does not necessarily relate to optimization problem since we minimize sum of distances</p>
+      <p> Let $I$ be the set of customer locations. Let $J$ be the set of candidate facility locations.
+      The goal is to choose which of the points in $J$ should be used to construct a facility. Therefore,
+      for each location we define a binary variable $x_j$
+      \[
+      x_j = \left\{\begin{array}{ll}
+             1 & \text{if we locate facility at candidate site $j \in J$ }\\
+             0 & \mathrm{otherwise}
+            \end{array}\right.
+      \]</p>
+      
+      <p> There is also a cost associated with constructing each site. We denote this fixed charge by $f_j$.</p>
+      
+      <p> We denote by $c_{ij}$ the cost of shipping between candidate facility site $j$ and customer location $i$.
+      The fraction of supply received by customer $i$ from facility $j$ is denoted by $y_{ij}$. This quantity has to be positive,
+      so we have the constraint $y_{ij} \geq 0$. We wish to minimize the total cost, i.e. the sum of the cost of opening
+      facilities and the cost related to shipping between facilities and clients. So the total cost is:
+      \[
+      \text{total cost} = \sum_{j \in J} f_j x_j + \sum_{j \in J} \sum_{i \in I} c_{ij} y_{ij}
+      \]
+      </p>
+      
+      <p> We can simplify the expression for total cost. $c_{ij}$ is usually proportional to the distance $d_{ij}$ between
+      the facility and the customer, i.e. $c_{ij} = \alpha d_{ij}$, so we can replace $c_{ij}$ with $d_{ij}$ (which we
+      take to be the euclidean distance between customer $i$ and facility $j$) and absorb the constant $\alpha$ into
+      $f_j$.</p>
+      
+      <p> Finally we need to add 2 constraints. Firstly, the demand for each customer must be supported, i.e. the
+      sum of the fraction received from each facility for client $i$ must be equal to 1
+      \[
+      \sum_{j \in J} y_{ij} = 1 \quad \forall i \in I
+      \]
+      Secondly, we can only ship from facility $j$ if the facility has actually been built. So we have the following
+      constraint
+      \[
+      y_{ij} \leq x_{ij} \quad \forall i \in I \quad \forall j \in J
+      \]
+      </p>
+      
+      <p> We end up with the following problem in the variables $x_j$ and $y_{ij}$
+      \[
+      \begin{array}{ll}
+      \text{minimize} & \sum_{j \in J} f_j x_j + \sum_{j \in J} \sum_{i \in I} d_{ij} y_{ij} \\
+      \text{subject to} & \sum_{j \in J} y_{ij} = 1 \\
+                        & y_{ij} \leq x_{ij}  \\
+                        & y_{ij} \geq 0  \\
+                        & x_j \in \{ 0, 1 \}
+      \end{array}
+      \]</p>
 
     </div>
     <div class="section" id="implementation">
@@ -123,6 +170,10 @@
     </div>
     <div class="section" id="demo">
       <h2><a href="#demo" name="demo">Live Demo</a></h2>
+      <p> Grid points show locations that have been determined to be good for potential facilities.
+      White circles are locations of clients.
+      Click to add more clients. Click compute to determine the locations of the facilities. Clients
+      within each colored region will be nearest the facility of the same color.</p>
       <div id="demoarea">
       </div>
       <button onclick="compute()">Compute</button>
@@ -134,6 +185,7 @@
 //Width and height
 var width = 800;
 var height = 500;
+var padding = 30;
 
 var svg = d3.select("#demoarea")
               .append("svg")
@@ -143,19 +195,20 @@ var svg = d3.select("#demoarea")
 
 // Initial points
 var vertices = d3.range(10).map(function(d) {
-  return [Math.random() * width, Math.random() * height];
+  return [Math.random() * (width + padding) + padding/2, Math.random() * (height + padding) + padding/2];
 });
 
 // Potential sites for facilities
 var sites = [];
 var n = 10;
+var cost = 300;
 for (var i = 1; i < n; i++) {
   for (var j = 1; j < n; j++) {
     sites.push([width*i/n, height*j/n]);
   }
 }
 
-var charge = d3.range(sites.length).map(function(d) { return 200; });
+var charge = d3.range(sites.length).map(function(d) { return cost; });
 
 // G object for voronoi
 var pathG = svg.append("g");
