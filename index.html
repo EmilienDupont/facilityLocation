@@ -66,7 +66,7 @@
       <h2><a href="#model" name="model">Mathematical Model</a></h2>
 
       <p>Model description goes here.</p>
-      
+
       <p> Let $I$ be the set of customer locations. Let $J$ be the set of candidate facility locations.
       The goal is to choose which of the points in $J$ should be used to construct a facility. Therefore,
       for each location we define a binary variable $x_j$
@@ -76,9 +76,9 @@
              0 & \mathrm{otherwise}
             \end{array}\right.
       \]</p>
-      
+
       <p> There is also a cost associated with constructing each site. We denote this fixed charge by $f_j$.</p>
-      
+
       <p> We denote by $c_{ij}$ the cost of shipping between candidate facility site $j$ and customer location $i$.
       The fraction of supply received by customer $i$ from facility $j$ is denoted by $y_{ij}$. This quantity has to be positive,
       so we have the constraint $y_{ij} \geq 0$. We wish to minimize the total cost, i.e. the sum of the cost of opening
@@ -87,12 +87,12 @@
       \text{total cost} = \sum_{j \in J} f_j x_j + \sum_{j \in J} \sum_{i \in I} c_{ij} y_{ij}
       \]
       </p>
-      
+
       <p> We can simplify the expression for total cost. $c_{ij}$ is usually proportional to the distance $d_{ij}$ between
       the facility and the customer, i.e. $c_{ij} = \alpha d_{ij}$, so we can replace $c_{ij}$ with $d_{ij}$ (which we
       take to be the euclidean distance between customer $i$ and facility $j$) and absorb the constant $\alpha$ into
       $f_j$.</p>
-      
+
       <p> Finally we need to add 2 constraints. Firstly, the demand for each customer must be supported, i.e. the
       sum of the fraction received from each facility for client $i$ must be equal to 1
       \[
@@ -104,7 +104,7 @@
       y_{ij} \leq x_{ij} \quad \forall i \in I \quad \forall j \in J
       \]
       </p>
-      
+
       <p> We end up with the following problem in the variables $x_j$ and $y_{ij}$
       \[
       \begin{array}{ll}
@@ -125,47 +125,47 @@
       <pre>
       ### ADD DATA ####
       clients = []; facilities = []; charge = [];
-      
+
       from gurobipy import *
       import math
-      
+
       def distance(a,b):
         dx = a[0] - b[0]
         dy = a[1] - b[1]
         return math.sqrt(dx*dx + dy*dy)
 
       numFacilities = len(facilities)
-      
+
       numClients = len(clients)
-      
+
       m = Model()
-      
+
       # Add variables
       x = {}
       y = {}
       d = {} # Distance matrix (not a variable)
-      
+
       for j in range(numFacilities):
           x[j] = m.addVar(vtype=GRB.BINARY, name="x%d" % j)
-      
+
       for i in range(numClients):
           for j in range(numFacilities):
               y[(i,j)] = m.addVar(lb=0, vtype=GRB.CONTINUOUS, name="t%d,%d" % (i,j))
               d[(i,j)] = distance(clients[i], facilities[j])
-      
+
       m.update()
-      
+
       # Add constraints
       for i in range(numClients):
           for j in range(numFacilities):
               m.addConstr(y[(i,j)] <= x[j])
-      
+
       for i in range(numClients):
           m.addConstr(quicksum(y[(i,j)] for j in range(numFacilities)) == 1)
-      
+
       m.setObjective( quicksum( charge[j]*x[j] + quicksum(d[(i,j)]*y[(i,j)] for i in range(numClients))
                                for j in range(numFacilities) ), GRB.MINIMIZE)
-      
+
       m.optimize()
       </pre>
     </div>
@@ -251,7 +251,7 @@ function addPoint() {
          .attr("cx", point[0])
          .attr("cy", point[1])
          .attr("class", "client");
-  
+
   // Add animation
   animationG.selectAll("circle").remove("circle");
   var anim = animationG.append("circle")
@@ -274,7 +274,7 @@ function polygon(d) {
 }
 
 function compute() {
-  d3.json('/resource')
+  d3.json('/voronoi')
     .header('Content-Type', 'application/json')
     .post(JSON.stringify({'clients': vertices,
                           'facilities': sites,
@@ -288,16 +288,16 @@ function serverResponse(error, data) {
       if ('solution' in data) {
           // Import solution and put it into correct format
           var solution = data['solution'];
-          
+
           var facilities = [];
-          
+
           for (var i = 0; i < solution.length; i++) {
             facilities.push(sites[solution[i]]);
           }
-          
+
           facilitiesG.selectAll("circle").remove("circle");
           animationG.selectAll("circle").remove("circle");
-          
+
           var faci = facilitiesG.selectAll("circle")
                      .data(facilities)
                      .enter()
@@ -307,7 +307,7 @@ function serverResponse(error, data) {
                      .attr("class", function(d, i) { return "c" + i % 5; })
                      .attr("r",60)
                      .attr("stroke-width", 2);
-          
+
           var anim = animationG.selectAll("circle")
                      .data(facilities)
                      .enter()
@@ -317,7 +317,7 @@ function serverResponse(error, data) {
                      .attr("class", function(d, i) { return "c" + i % 5; })
                      .attr("r",0)
                      .attr("stroke-width", 0);
-        
+
           faci.style("opacity", 0)
               .style("stroke-opacity", 0)
               .transition()
@@ -326,7 +326,7 @@ function serverResponse(error, data) {
               .attr("r", 6)
               .duration(500)
               .delay(function(d, i) { return i*100 });
-          
+
           anim.style("opacity", .5)
               .style("stroke-opacity", .5)
               .transition()
@@ -336,9 +336,9 @@ function serverResponse(error, data) {
               .duration(500)
               .ease("out")
               .delay(function(d, i) { return i*100 + 300});
-          
+
           pathG.selectAll("path").remove("path");
-        
+
           var voroPath = pathG.selectAll("path")
                               .data(d3.geom.voronoi(facilities))
                               .enter()
@@ -346,7 +346,7 @@ function serverResponse(error, data) {
                               .attr("d", polygon)
                               .attr("class", function(d, i) { return "v" + i % 5; })
                               .attr("stroke-opacity", 0);
-          
+
           voroPath.style("opacity", 0)
                   .transition()
                   .style("opacity", .5)
