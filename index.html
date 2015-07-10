@@ -274,7 +274,7 @@ function polygon(d) {
 }
 
 function compute() {
-  d3.json('/resource')
+  d3.json('/voronoi')
     .header('Content-Type', 'application/json')
     .post(JSON.stringify({'clients': vertices,
                           'facilities': sites,
