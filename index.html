@@ -16,13 +16,11 @@
   fill: white;
   stroke: black;
   stroke-width: 2;
-  r: 4;
 }
 
 .site {
   fill: black;
   opacity: 0.1;
-  r: 3;
 }
 
 .c0 { fill: blue; stroke: #000099 }
@@ -234,7 +232,8 @@ circleG.selectAll("circle")
        .append("circle")
        .attr("cx", function(d) { return d[0]; })
        .attr("cy", function(d) { return d[1]; })
-       .attr("class", "client");
+       .attr("class", "client")
+       .attr("r", 4);
 
 sitesG.selectAll("circle")
        .data(sites)
@@ -242,7 +241,8 @@ sitesG.selectAll("circle")
        .append("circle")
        .attr("cx", function(d) { return d[0]; })
        .attr("cy", function(d) { return d[1]; })
-       .attr("class", "site");
+       .attr("class", "site")
+       .attr("r", 3);
 
 function addPoint() {
   var point = d3.mouse(this);
@@ -250,7 +250,8 @@ function addPoint() {
   circleG.append("circle")
          .attr("cx", point[0])
          .attr("cy", point[1])
-         .attr("class", "client");
+         .attr("class", "client")
+         .attr("r", 4);
 
   // Add animation
   animationG.selectAll("circle").remove("circle");
