@@ -137,6 +137,25 @@ aside {
 .v3 { fill: yellow; }
 .v4 { fill: gray; }
 
+.place,
+.place-label {
+  fill: black;
+  opacity: .7;
+}
+
+.road {
+  stroke: white;
+  stroke-width: 2;
+  stroke-opacity: .5;
+  fill: none;
+}
+
+text {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  pointer-events: none;
+}
 
 </style>
 <body>
@@ -297,6 +316,7 @@ aside {
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
 <script>
 
 //Width and height
@@ -326,6 +346,9 @@ for (var i = 1; i < n; i++) {
 }
 
 var charge = d3.range(sites.length).map(function(d) { return cost; });
+
+// G object for map
+var mapG = svg.append("g");
 
 // G object for voronoi
 var pathG = svg.append("g");
@@ -359,6 +382,59 @@ sitesG.selectAll("circle")
        .attr("cy", function(d) { return d[1]; })
        .attr("class", "site")
        .attr("r", 3);
+
+// Add the map
+var projection = d3.geo.albers()
+    .center([0, 39.7])
+    .rotate([105.9, 0])
+    .parallels([50, 60])
+    .scale(8000)
+    .translate([2*width / 5 , 0.5*height]);
+
+var path = d3.geo.path()
+    .projection(projection)
+    .pointRadius(2);
+
+d3.json("USwithRoads.json", function(error, us) {
+  var subunits = topojson.feature(us, us.objects.subunitsUSA),
+      places = topojson.feature(us, us.objects.placesUSA),
+      roads = topojson.feature(us, us.objects.roadsUSA);
+
+  mapG.selectAll(".subunit")
+      .data(subunits.features)
+    .enter().append("path")
+      .attr("fill", "#ddc")
+      .attr("d", path);
+
+  mapG.selectAll(".subunit-label")
+      .data(subunits.features)
+    .enter().append("text")
+      .attr("class", function(d) { return "subunit-label " + d.id; })
+      .attr("transform", function(d) { return "translate(" + path.centroid(d) + ")"; })
+      .attr("dy", ".35em")
+      .text(function(d) { return d.properties.name; });
+
+  mapG.append("path")
+      .datum(roads)
+      .attr("d", path)
+      .attr("class", "road");
+
+  mapG.append("path")
+      .datum(places)
+      .attr("d", path)
+      .attr("class", "place");
+
+  mapG.selectAll(".place-label")
+      .data(places.features)
+    .enter().append("text")
+      .attr("class", "place-label")
+      .attr("transform", function(d) { return "translate(" + projection(d.geometry.coordinates) + ")"; })
+      .attr("x", function(d) { return d.geometry.coordinates[0] > -1 ? 6 : -6; })
+      .attr("dy", ".35em")
+      .style("text-anchor", function(d) { return d.geometry.coordinates[0] > -1 ? "start" : "end"; })
+      .text(function(d) { return d.properties.name; });
+});
+
 
 function addPoint() {
   var point = d3.mouse(this);
