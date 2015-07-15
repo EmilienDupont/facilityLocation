@@ -117,12 +117,12 @@ aside {
 .client {
   fill: white;
   stroke: black;
-  stroke-width: 2;
+  stroke-width: 0;
 }
 
 .site {
   fill: black;
-  opacity: 0.1;
+  opacity: .1;
 }
 
 .c0 { fill: blue; stroke: #000099 }
@@ -139,8 +139,8 @@ aside {
 
 .place,
 .place-label {
-  fill: black;
-  opacity: .7;
+  fill: white;
+  opacity: 1;
 }
 
 .road {
@@ -152,7 +152,7 @@ aside {
 
 text {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 400;
   pointer-events: none;
 }
@@ -331,9 +331,7 @@ var svg = d3.select("#demoarea")
               .on("mousedown", addPoint);
 
 // Initial points
-var vertices = d3.range(10).map(function(d) {
-  return [Math.random() * (width + padding) + padding/2, Math.random() * (height + padding) + padding/2];
-});
+var vertices = [[430, 248.5]]
 
 // Potential sites for facilities
 var sites = [];
@@ -350,9 +348,6 @@ var charge = d3.range(sites.length).map(function(d) { return cost; });
 // G object for map
 var mapG = svg.append("g");
 
-// G object for voronoi
-var pathG = svg.append("g");
-
 // G object for animations
 var animationG = svg.append("g");
 
@@ -362,8 +357,14 @@ var sitesG = svg.append("g");
 // G object for points
 var circleG = svg.append("g");
 
+// G object for voronoi
+var pathG = svg.append("g");
+
 // G object for facilities
 var facilitiesG = svg.append("g");
+
+// G object for location names
+var locationG = svg.append("g");
 
 circleG.selectAll("circle")
        .data(vertices)
@@ -372,7 +373,7 @@ circleG.selectAll("circle")
        .attr("cx", function(d) { return d[0]; })
        .attr("cy", function(d) { return d[1]; })
        .attr("class", "client")
-       .attr("r", 4);
+       .attr("r", 2);
 
 sitesG.selectAll("circle")
        .data(sites)
@@ -385,48 +386,66 @@ sitesG.selectAll("circle")
 
 // Add the map
 var projection = d3.geo.albers()
-    .center([0, 39.7])
-    .rotate([105.9, 0])
+    .center([0, 39])
+    .rotate([106.5, 0])
     .parallels([50, 60])
-    .scale(8000)
+    .scale(6000)
     .translate([2*width / 5 , 0.5*height]);
 
 var path = d3.geo.path()
     .projection(projection)
     .pointRadius(2);
 
-d3.json("USwithRoads.json", function(error, us) {
-  var subunits = topojson.feature(us, us.objects.subunitsUSA),
+// Create color gradient for the map
+var mapColors = [];
+var maxRed = 222, minRed = 49;
+var maxGreen = 235, minGreen = 130;
+var maxBlue = 247, minBlue = 189;
+var numColors = 10;
+for (var i = 0; i < numColors; i++) {
+  var red = String( Math.round( minRed + (maxRed - minRed)*i/numColors ) );
+  var green = String( Math.round( minGreen + (maxGreen - minGreen)*i/numColors) );
+  var blue = String( Math.round( minBlue + (maxBlue - minBlue)*i/numColors ) );
+  mapColors.push( "rgb(" + red + "," + green + "," + blue + ")");
+}
+console.log(mapColors);
+
+d3.json("USwithUrban.json", function(error, us) {
+  var subunits = topojson.feature(us, us.objects.statesUSA),
       places = topojson.feature(us, us.objects.placesUSA),
-      roads = topojson.feature(us, us.objects.roadsUSA);
+      urban = topojson.feature(us, us.objects.urban);
+      //roads = topojson.feature(us, us.objects.roadsUSA);
 
   mapG.selectAll(".subunit")
       .data(subunits.features)
-    .enter().append("path")
-      .attr("fill", "#ddc")
+      .enter().append("path")
+      .attr("fill", function(d,i) { return mapColors[i % 9];})
+      .attr("stroke", "white")
+      .attr("stroke-width", 1)
+      .attr("opacity", .8)
       .attr("d", path);
-
+  /*
   mapG.selectAll(".subunit-label")
       .data(subunits.features)
-    .enter().append("text")
-      .attr("class", function(d) { return "subunit-label " + d.id; })
+      .enter().append("text")
       .attr("transform", function(d) { return "translate(" + path.centroid(d) + ")"; })
       .attr("dy", ".35em")
-      .text(function(d) { return d.properties.name; });
+      .text(function(d) { return d.properties.name; }); */
 
   mapG.append("path")
-      .datum(roads)
+      .datum(urban)
       .attr("d", path)
-      .attr("class", "road");
+      .attr("fill", "black")
+      .attr("opacity", .3);
 
-  mapG.append("path")
+  locationG.append("path")
       .datum(places)
       .attr("d", path)
       .attr("class", "place");
 
-  mapG.selectAll(".place-label")
+  locationG.selectAll(".place-label")
       .data(places.features)
-    .enter().append("text")
+      .enter().append("text")
       .attr("class", "place-label")
       .attr("transform", function(d) { return "translate(" + projection(d.geometry.coordinates) + ")"; })
       .attr("x", function(d) { return d.geometry.coordinates[0] > -1 ? 6 : -6; })
@@ -443,7 +462,7 @@ function addPoint() {
          .attr("cx", point[0])
          .attr("cy", point[1])
          .attr("class", "client")
-         .attr("r", 4);
+         .attr("r", 2);
 
   // Add animation
   animationG.selectAll("circle").remove("circle");
