@@ -171,68 +171,116 @@ text {
       <h1>Facility Location</h1>
         <subtitle>with integer programming and Gurobi</subtitle>
     </div>
-    <p> In this example we'll solve a simple facility location problem: where to build
-    hospitals in order to serve as many people as possible. </p>
     <p>
-      We'll construct a mathematical model of the business problem, implement
-      this model in Gurobi's Python interface, and compute and visualize an optimal solution.
+      In this example we'll solve a simple facility location problem:
+      where to build warehouses to supply a large number of supermarkets.
     </p>
 
     <p>
-      Although you may not have to build hospitals in your own business, the same basic
-      techniques used in this example translate to many different problems and applications.
+      We'll construct a mathematical model of the business problem,
+      implement this model in Gurobi's Python interface, and compute and
+      visualize an optimal solution.
+    </p>
+
+    <p>
+      Although your own business may not involve supermarkets, the
+      same basic techniques used in this example can be used for many
+      other applications in supply chain, logistics and transportation.
     </p>
 
     <div class="section" id="problem">
       <h2><a href="#problem" name="problem">Problem Description</a></h2>
-      Problem description goes here
-      <p>
-        # Source of optimization problem: Facility Location in Supply Chain.
-        Where to build new hospitals so that distance to drive from different places is minimized.
-        Example of Uncapacitated Facility Location Problem
-      </p>
+    <p>
+      A large supermarket chain needs to build warehouses for a set of
+      supermarkets it is opening in Arkansas and the surrounding states.
+      The locations of the supermarkets have been decided, but the
+      locations of the warehouses are yet to be chosen.
+    </p>
+
+    <p>
+      Several good candidate locations for the warehouses have been
+      determined, but it remains to decide how many warehouses to
+      open and at which candidate locations to build them.
+    </p>
+
+    <p>
+      Opening many warehouses would be advantageous as this would
+      reduce the average distance a truck has to drive from
+      warehouse to supermarket, and hence reduce the delivery cost.
+      Opening a warehouse is, however, costly. So we should also
+      limit the number of warehouses we build.
+    </p>
+
+    <p>
+      We will use Gurobi to find the optimal tradeoff between delivery
+      cost and the cost of building new facilities.
+    </p>
+
     </div>
     <div class="section" id="model">
       <h2><a href="#model" name="model">Mathematical Model</a></h2>
 
-      <p>Model description goes here.</p>
-
-      <p> Let $I$ be the set of customer locations. Let $J$ be the set of candidate facility locations.
-      The goal is to choose which of the points in $J$ should be used to construct a facility. Therefore,
-      for each location we define a binary variable $x_j$
-      \[
-      x_j = \left\{\begin{array}{ll}
-             1 & \text{if we locate facility at candidate site $j \in J$ }\\
-             0 & \mathrm{otherwise}
-            \end{array}\right.
-      \]</p>
-
-      <p> There is also a cost associated with constructing each site. We denote this fixed charge by $f_j$.</p>
-
-      <p> We denote by $c_{ij}$ the cost of shipping between candidate facility site $j$ and customer location $i$.
-      The fraction of supply received by customer $i$ from facility $j$ is denoted by $y_{ij}$. This quantity has to be positive,
-      so we have the constraint $y_{ij} \geq 0$. We wish to minimize the total cost, i.e. the sum of the cost of opening
-      facilities and the cost related to shipping between facilities and clients. So the total cost is:
-      \[
-      \text{total cost} = \sum_{j \in J} f_j x_j + \sum_{j \in J} \sum_{i \in I} c_{ij} y_{ij}
-      \]
+      <p>
+        Our example is an instance of the
+        <a href="http://www.sciencedirect.com/science/article/pii/S0377221703008191">
+        Uncapacitated Facility Location Problem</a>. There are many
+        different types of facility location problems, see for example
+        the book <a href="http://www.springer.com/us/book/9783540421726">
+        Facility Location: Applications and Theory</a> for more details.
       </p>
 
-      <p> We can simplify the expression for total cost. $c_{ij}$ is usually proportional to the distance $d_{ij}$ between
-      the facility and the customer, i.e. $c_{ij} = \alpha d_{ij}$, so we can replace $c_{ij}$ with $d_{ij}$ (which we
-      take to be the euclidean distance between customer $i$ and facility $j$) and absorb the constant $\alpha$ into
-      $f_j$.</p>
+      <p>
+        Let us now formulate a mathematical model for our problem.
+        Let $I$ be the set of supermarket (or <em>customer</em>) locations.
+        Let $J$ be the set of candidate warehouse (or <em>facility</em>)
+        locations. The goal is to choose which of the points in $J$ should
+        be used to construct a facility. Therefore, for each location we
+        define a binary variable $x_j$
+        \[
+        x_j = \left\{\begin{array}{ll}
+               1 & \text{if we locate facility at candidate site $j \in J$ }\\
+               0 & \mathrm{otherwise}
+              \end{array}\right.
+        \]
+      </p>
 
-      <p> Finally we need to add 2 constraints. Firstly, the demand for each customer must be supported, i.e. the
-      sum of the fraction received from each facility for client $i$ must be equal to 1
-      \[
-      \sum_{j \in J} y_{ij} = 1 \quad \forall i \in I
-      \]
-      Secondly, we can only ship from facility $j$ if the facility has actually been built. So we have the following
-      constraint
-      \[
-      y_{ij} \leq x_{ij} \quad \forall i \in I \quad \forall j \in J
-      \]
+      <p> There is a cost associated with constructing each warehouse. We
+      denote this fixed charge by $f_j$.</p>
+
+      <p>
+        We denote by $c_{ij}$ the cost of shipping between candidate
+        warehouse site $j$ and supermarket location $i$. The fraction
+        of supply received by customer $i$ from facility $j$ is denoted
+        by $y_{ij}$. This quantity has to be positive, so we have the
+        constraint $y_{ij} \geq 0$. We wish to minimize the total cost,
+        i.e. the sum of the cost of opening facilities and the cost
+        related to shipping between facilities and clients.
+        So the total cost is:
+        \[
+        \text{total cost} = \sum_{j \in J} f_j x_j + \sum_{j \in J} \sum_{i \in I} c_{ij} y_{ij}
+        \]
+      </p>
+
+      <p>
+        We can simplify the expression for total cost. $c_{ij}$ is usually
+        proportional to the distance $d_{ij}$ between the facility and the
+        customer, i.e. $c_{ij} = \alpha d_{ij}$, so we can replace
+        $c_{ij}$ with $d_{ij}$ (which we take to be the euclidean distance
+        between customer $i$ and facility $j$) and absorb the constant
+        $\alpha$ into $f_j$ (by scaling $f_j$ by $1 / \alpha$).
+      </p>
+
+      <p>
+        Finally we need to add 2 constraints. Firstly, the demand for each customer must be supported, i.e. the
+        sum of the fraction received from each facility for client $i$ must be equal to 1
+        \[
+        \sum_{j \in J} y_{ij} = 1 \quad \forall i \in I
+        \]
+        Secondly, we can only ship from facility $j$ if the facility has actually been built. So we have the following
+        constraint
+        \[
+        y_{ij} \leq x_{ij} \quad \forall i \in I \quad \forall j \in J
+        \]
       </p>
 
       <p> We end up with the following problem in the variables $x_j$ and $y_{ij}$
@@ -352,14 +400,6 @@ for (var i = 1; i < n; i++) {
     sites.push([width*i/n, height*j/n]);
   }
 }
-/*
-sites = [[423, 197.5], [452, 206.5], [482, 176.5], [495, 219.5], [422, 234.5],
-         [362, 197.5], [313, 231.5], [303, 162.5], [269, 200.5], [230, 242.5],
-         [177, 237.5], [158, 148.5], [189, 72.5], [234, 162.5], [170, 276.5],
-         [127, 406.5], [171, 348.5], [255, 387.5], [306, 352.5], [360, 413.5],
-         [298, 302.5], [398, 340.5], [517, 386.5], [658, 402.5], [652, 271.5],
-         [543, 287.5], [640, 165.5], [570, 192.5], [445, 102.5], [452, 77.5],
-         [428, 71.5], [635, 68.5], [563, 113.5], [502, 431.5], [465, 157.5], [449, 131.5]]; */
 
 var charge = d3.range(sites.length).map(function(d) { return cost; });
 
