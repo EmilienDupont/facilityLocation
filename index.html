@@ -271,28 +271,31 @@ text {
       </p>
 
       <p>
-        Finally we need to add 2 constraints. Firstly, the demand for each customer must be supported, i.e. the
-        sum of the fraction received from each facility for client $i$ must be equal to 1
+        Finally, we need to add 2 constraints. Firstly, the demand for each
+        customer must be supported, i.e. the sum of the fraction received
+        from each facility for client $i$ must be equal to 1
         \[
         \sum_{j \in J} y_{ij} = 1 \quad \forall i \in I
         \]
-        Secondly, we can only ship from facility $j$ if the facility has actually been built. So we have the following
-        constraint
+        Secondly, we can only ship from facility $j$ if the facility has
+        actually been built. So we have the following constraint
         \[
         y_{ij} \leq x_{ij} \quad \forall i \in I \quad \forall j \in J
         \]
       </p>
 
-      <p> We end up with the following problem in the variables $x_j$ and $y_{ij}$
-      \[
-      \begin{array}{ll}
-      \text{minimize} & \sum_{j \in J} f_j x_j + \sum_{j \in J} \sum_{i \in I} d_{ij} y_{ij} \\
-      \text{subject to} & \sum_{j \in J} y_{ij} = 1 \\
-                        & y_{ij} \leq x_{ij}  \\
-                        & y_{ij} \geq 0  \\
-                        & x_j \in \{ 0, 1 \}
-      \end{array}
-      \]</p>
+      <p>
+        We end up with the following problem in the variables $x_j$ and $y_{ij}$
+        \[
+        \begin{array}{ll}
+        \text{minimize} & \sum_{j \in J} f_j x_j + \sum_{j \in J} \sum_{i \in I} d_{ij} y_{ij} \\
+        \text{subject to} & \sum_{j \in J} y_{ij} = 1 \\
+                          & y_{ij} \leq x_{ij}  \\
+                          & y_{ij} \geq 0  \\
+                          & x_j \in \{ 0, 1 \}
+        \end{array}
+        \]
+      </p>
 
     </div>
     <div class="section" id="implementation">
