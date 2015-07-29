@@ -139,15 +139,8 @@ aside {
 
 .place,
 .place-label {
-  fill: white;
+  fill: black;
   opacity: 1;
-}
-
-.road {
-  stroke: white;
-  stroke-width: 2;
-  stroke-opacity: .5;
-  fill: none;
 }
 
 text {
@@ -190,11 +183,18 @@ text {
 
     <div class="section" id="problem">
       <h2><a href="#problem" name="problem">Problem Description</a></h2>
+
+    <div style="float:right;">
+      <a href="https://en.wikipedia.org/wiki/Logistics">
+        <img src="warehouse.jpg" alt="Warehouse" style="width:200px;">
+      </a>
+    </div>
+
     <p>
       A large supermarket chain needs to build warehouses for a set of
-      supermarkets it is opening in Arkansas and the surrounding states.
-      The locations of the supermarkets have been decided, but the
-      locations of the warehouses are yet to be chosen.
+      supermarkets it is opening. The locations of the supermarkets
+      have been decided, but the locations of the warehouses are yet
+      to be chosen.
     </p>
 
     <p>
@@ -210,6 +210,9 @@ text {
       Opening a warehouse is, however, costly. So we should also
       limit the number of warehouses we build.
     </p>
+
+    <aside>
+    </aside>
 
     <p>
       We will use Gurobi to find the optimal tradeoff between delivery
@@ -244,8 +247,10 @@ text {
         \]
       </p>
 
-      <p> There is a cost associated with constructing each warehouse. We
-      denote this fixed charge by $f_j$.</p>
+      <p>
+        There is a cost associated with constructing each warehouse. We
+        denote this fixed charge by $f_j$.
+      </p>
 
       <p>
         We denote by $c_{ij}$ the cost of shipping between candidate
@@ -352,17 +357,44 @@ text {
     </div>
     <div class="section" id="demo">
       <h2><a href="#demo" name="demo">Live Demo</a></h2>
-      <p> Grid points show locations that have been determined to be good for potential facilities.
-      White circles are locations of clients.
-      Click to add more clients. Click compute to determine the locations of the facilities. Clients
-      within each colored region will be nearest the facility of the same color. The charge to open a
-      facility is the same for all the facility locations in this example, and the demand is the same
-      for every point. </p>
 
+      <p>
+        Below is a visualization of our example for a supermarket company
+        operating in Arkansas and the surrounding states.
+      </p>
+
+      <p>
+        Supermarkets are represented by:
+        <svg height="20" width="20">
+	  <circle cx="10" cy="15" r="3" stroke="black" stroke-width="1" fill="white" />
+	</svg>
+      </p>
+
+      <p>
+        Warehouses are represented by:
+        <svg height="20" width="100">
+	  <circle cx="10" cy="10" r="8" stroke="#000099" stroke-width="3" fill="blue" />
+          <circle cx="30" cy="10" r="8" stroke="#006600" stroke-width="3" fill="green" />
+          <circle cx="50" cy="10" r="8" stroke="#990000" stroke-width="3" fill="red" />
+          <circle cx="70" cy="10" r="8" stroke="#999900" stroke-width="3" fill="yellow" />
+          <circle cx="90" cy="10" r="8" stroke="#404040" stroke-width="3" fill="gray" />
+	</svg>
+      </p>
+
+      <p>
+        Click "Compute Warehouse Locations" to find the optimal locations
+        using Gurobi. Every supermarket included in a colored area will be
+        served by the warehouse of the same color.
+      </p>
+
+      <p>
+        A few supermarket locations have already been set up, but you can add
+        more by clicking the screen.
+      </p>
 
       <div id="demoarea">
       </div>
-      <button class="pure-button" onclick="compute()">Compute</button>
+      <button class="pure-button" onclick="compute()">Compute Warehouse Locations</button>
     </div>
 
     <div style="min-height:100px"></div>
@@ -475,7 +507,6 @@ d3.json("USwithUrban.json", function(error, us) {
   var subunits = topojson.feature(us, us.objects.statesUSA),
       places = topojson.feature(us, us.objects.placesUSA),
       urban = topojson.feature(us, us.objects.urban);
-      //roads = topojson.feature(us, us.objects.roadsUSA);
 
   mapG.selectAll(".subunit")
       .data(subunits.features)
