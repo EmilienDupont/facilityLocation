@@ -309,9 +309,6 @@ text {
         Gurobi's Python interface:
       </p>
       <pre>
-      ### ADD DATA ####
-      clients = []; facilities = []; charge = [];
-
       from gurobipy import *
       import math
 
@@ -319,6 +316,13 @@ text {
         dx = a[0] - b[0]
         dy = a[1] - b[1]
         return math.sqrt(dx*dx + dy*dy)
+
+      # Problem data
+      clients = [[0, 1.5],[2.5, 1.2]]
+      facilities = [[0,0],[0,1],[0,1]
+                    [1,0],[1,1],[1,2]
+                    [2,0],[2,1],[2,2]]
+      charge = [3,2,3,1,3,3,4,3,2]
 
       numFacilities = len(facilities)
 
@@ -349,8 +353,7 @@ text {
       for i in range(numClients):
           m.addConstr(quicksum(y[(i,j)] for j in range(numFacilities)) == 1)
 
-      m.setObjective( quicksum( charge[j]*x[j] + quicksum(d[(i,j)]*y[(i,j)] for i in range(numClients))
-                               for j in range(numFacilities) ), GRB.MINIMIZE)
+      m.setObjective( quicksum( charge[j]*x[j] + quicksum(d[(i,j)]*y[(i,j)] for i in range(numClients)) for j in range(numFacilities) ), GRB.MINIMIZE)
 
       m.optimize()
       </pre>
@@ -424,7 +427,12 @@ var svg = d3.select("#demoarea")
               .on("mousedown", addPoint);
 
 // Initial points
-var vertices = [[441, 187.5], [455, 184.5]];
+var vertices = [[427, 269.5], [434, 271.5], [431, 278.5], [459, 321.5],
+                [462, 327.5], [570, 169.5], [585, 112.5], [612, 167.5],
+                [361, 307.5], [266, 134.5], [258, 134.5], [505, 226.5],
+                [500, 268.5], [486, 320.5], [532, 330.5], [506, 374.5],
+                [576, 374.5], [575, 444.5], [673, 343.5], [673, 426.5],
+                [628, 461.5], [486, 487.5]];
 
 // Potential sites for facilities
 var sites = [];
