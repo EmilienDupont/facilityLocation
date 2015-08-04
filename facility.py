@@ -17,14 +17,15 @@ def distance(a,b):
     dy = a[1] - b[1]
     return math.sqrt(dx*dx + dy*dy)
 
-def optimize(clients, facilities, charge):
+def optimize(clients, facilities, charge, output=False):
     numFacilities = len(facilities)
-
-    print numFacilities
 
     numClients = len(clients)
 
     m = Model()
+
+    if not output:
+        m.params.OutputFlag = 0
 
     # Add variables
     x = {}
@@ -68,4 +69,14 @@ def optimize(clients, facilities, charge):
 
     return [solution1, solution2]
 
-print optimize(clients, facilities, charge)
+def handleoptimize(jsdict):
+    if 'clients' in jsdict and 'facilities' in jsdict and 'charge' in jsdict:
+        solution = optimize(jsdict['clients'], jsdict['facilities'], jsdict['charge'])
+        return {'solution': solution }
+
+if __name__ == '__main__':
+    import json
+    jsdict = json.load(sys.stdin)
+    jsdict = handleoptimize(jsdict)
+    print 'Content-Type: application/json\n\n'
+    print json.dumps(jsdict)

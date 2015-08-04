@@ -10,109 +10,8 @@
                                     scale: 90 }
                      });
 </script>
-<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.4.2/pure-min.css">
+<link rel="stylesheet" href="http://examples.gurobi.com/base.css">
 <style>
-
-@import url(http://fonts.googleapis.com/css?family=PT+Serif|PT+Serif:b|PT+Serif:i|PT+Sans|PT+Sans:b);
-@import url(http://fonts.googleapis.com/css?family=Lato);
-html {
-   min-width: 1040px;
-}
-
-body {
-   background: #fcfcfa;
-   color: #333;
-   font-family: "PT Serif", serif;
-   /*margin: 0 1em 4em auto;*/
-   position: relative;
-   width: 960px;
-   left: 13em;
-}
-
-h1, h2, h3, h4 { font-family: "Lato", "PT Serif", serif; color: #000; text-rendering: optimizeLegibility; }
-
-h1 {
-  font-size: 64px;
-  line-height: 73px;
-  font-weight: 900;
-  margin-top: 0.67em;
-  margin-right: 0;
-  margin-bottom: 0;
-  margin-left: 0;
-}
-
-h2 {
-   margin-top: 2em;
-}
-
-subtitle {
-   display:block;
-   font-family: "PT Serif", serif;
-   font-size: 32px;
-   font-style: italic;
-   font-weight: 100;
-}
-
-p {
-  line-height: 150%;
-  width: 720px;
-}
-
-a {
-  color: steelblue;
-  cursor: auto;
-}
-
-a:not(:hover) {
-   text-decoration: none;
-}
-
-pre {
-   border-left: solid 2px #ccc;
-   padding-left: 18px;
-   margin: 2em 0 2em -20px;
-}
-
-aside {
-   font-size: small;
-   right: 0;
-   position: absolute;
-   width: 180px;
-}
-
-#nav {
-        left: 5px;
-        font-family: "Lato", serif;
-        font-weight: 700;
-        list-style: none;
-        margin: 0;
-        position: fixed;
-        top: 10px;
-        box-sizing: border-box;
-}
-
-
-#nav li {
-        margin-bottom: 0px;
-}
-
-#nav a {
-        color: #333;
-        display: block;
-        font-size: 14px;
-        border-left: 3px solid #fcfcfa;
-        padding: 5px 10px;
-        text-decoration: none;
-}
-
-#nav a:hover {
-   border-left: 3px solid steelblue;
-}
-
-#nav .current a {
-   border-left: 3px solid steelblue;
-}
-
 
 .client {
   fill: white;
@@ -159,8 +58,8 @@ text {
     <li><a href="#implementation">Implementation</a></li>
     <li><a href="#demo">Live Demo</a></li>
   </ul>
-  <div id="container">
-    <div class="section" id="intro">
+  <div id="example_container">
+    <div class="example_section" id="intro">
       <h1>Facility Location</h1>
         <subtitle>with integer programming and Gurobi</subtitle>
     </div>
@@ -181,7 +80,7 @@ text {
       other applications in supply chain, logistics and transportation.
     </p>
 
-    <div class="section" id="problem">
+    <div class="example_section" id="problem">
       <h2><a href="#problem" name="problem">Problem Description</a></h2>
 
     <div style="float:right;">
@@ -217,7 +116,7 @@ text {
     </p>
 
     </div>
-    <div class="section" id="model">
+    <div class="example_section" id="model">
       <h2><a href="#model" name="model">Mathematical Model</a></h2>
 
       <p>
@@ -300,62 +199,61 @@ text {
       </p>
 
     </div>
-    <div class="section" id="implementation">
+    <div class="example_section" id="implementation">
       <h2><a href="#implementation" name="implementation">Implementation</a></h2>
       <p>Below is the full implementation of the model (and the associated data) in
         Gurobi's Python interface:
       </p>
-      <pre>
-      from gurobipy import *
-      import math
+<examplecode>
+from gurobipy import *
+import math
 
-      def distance(a,b):
-        dx = a[0] - b[0]
-        dy = a[1] - b[1]
-        return math.sqrt(dx*dx + dy*dy)
+def distance(a,b):
+  dx = a[0] - b[0]
+  dy = a[1] - b[1]
+  return math.sqrt(dx*dx + dy*dy)
 
-      # Problem data
-      clients = [[0, 1.5],[2.5, 1.2]]
-      facilities = [[0,0],[0,1],[0,1]
-                    [1,0],[1,1],[1,2]
-                    [2,0],[2,1],[2,2]]
-      charge = [3,2,3,1,3,3,4,3,2]
+# Problem data
+clients = [[0, 1.5],[2.5, 1.2]]
+facilities = [[0,0],[0,1],[0,1]
+              [1,0],[1,1],[1,2]
+              [2,0],[2,1],[2,2]]
+charge = [3,2,3,1,3,3,4,3,2]
 
-      numFacilities = len(facilities)
+numFacilities = len(facilities)
+numClients = len(clients)
 
-      numClients = len(clients)
+m = Model()
 
-      m = Model()
+# Add variables
+x = {}
+y = {}
+d = {} # Distance matrix (not a variable)
 
-      # Add variables
-      x = {}
-      y = {}
-      d = {} # Distance matrix (not a variable)
+for j in range(numFacilities):
+  x[j] = m.addVar(vtype=GRB.BINARY, name="x%d" % j)
 
-      for j in range(numFacilities):
-          x[j] = m.addVar(vtype=GRB.BINARY, name="x%d" % j)
+for i in range(numClients):
+  for j in range(numFacilities):
+    y[(i,j)] = m.addVar(lb=0, vtype=GRB.CONTINUOUS, name="t%d,%d" % (i,j))
+    d[(i,j)] = distance(clients[i], facilities[j])
 
-      for i in range(numClients):
-          for j in range(numFacilities):
-              y[(i,j)] = m.addVar(lb=0, vtype=GRB.CONTINUOUS, name="t%d,%d" % (i,j))
-              d[(i,j)] = distance(clients[i], facilities[j])
+m.update()
 
-      m.update()
+# Add constraints
+for i in range(numClients):
+  for j in range(numFacilities):
+    m.addConstr(y[(i,j)] &lt;= x[j])
 
-      # Add constraints
-      for i in range(numClients):
-          for j in range(numFacilities):
-              m.addConstr(y[(i,j)] <= x[j])
+for i in range(numClients):
+  m.addConstr(quicksum(y[(i,j)] for j in range(numFacilities)) == 1)
 
-      for i in range(numClients):
-          m.addConstr(quicksum(y[(i,j)] for j in range(numFacilities)) == 1)
+m.setObjective( quicksum( charge[j]*x[j] + quicksum(d[(i,j)]*y[(i,j)] for i in range(numClients)) for j in range(numFacilities)))
 
-      m.setObjective( quicksum( charge[j]*x[j] + quicksum(d[(i,j)]*y[(i,j)] for i in range(numClients)) for j in range(numFacilities) ), GRB.MINIMIZE)
-
-      m.optimize()
-      </pre>
+m.optimize()
+</examplecode>
     </div>
-    <div class="section" id="demo">
+    <div class="example_section" id="demo">
       <h2><a href="#demo" name="demo">Live Demo</a></h2>
 
       <p>
@@ -578,7 +476,7 @@ function polygon(d) {
 }
 
 function compute() {
-  d3.json('/voronoi')
+  d3.json('facility.py')
     .header('Content-Type', 'application/json')
     .post(JSON.stringify({'clients': vertices,
                           'facilities': sites,
