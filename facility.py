@@ -19,47 +19,53 @@ def distance(a,b):
 
 def optimize(clients, facilities, charge):
     numFacilities = len(facilities)
-    
+
     print numFacilities
-    
+
     numClients = len(clients)
-    
+
     m = Model()
-    
+
     # Add variables
     x = {}
     y = {}
     d = {} # Distance matrix (not a variable)
-    
+
     for j in range(numFacilities):
         x[j] = m.addVar(vtype=GRB.BINARY, name="x%d" % j)
-    
+
     for i in range(numClients):
         for j in range(numFacilities):
             y[(i,j)] = m.addVar(lb=0, vtype=GRB.CONTINUOUS, name="t%d,%d" % (i,j))
             d[(i,j)] = distance(clients[i], facilities[j])
-    
+
     m.update()
-    
+
     # Add constraints
     for i in range(numClients):
         for j in range(numFacilities):
             m.addConstr(y[(i,j)] <= x[j])
-    
+
     for i in range(numClients):
         m.addConstr(quicksum(y[(i,j)] for j in range(numFacilities)) == 1)
-    
+
     m.setObjective( quicksum( charge[j]*x[j] + quicksum(d[(i,j)]*y[(i,j)] for i in range(numClients))
                              for j in range(numFacilities) ), GRB.MINIMIZE)
-    
+
     m.optimize()
-    
-    solution = [];
-    
-    for i in range(numFacilities):
-        if (x[i].X > .5):
-            solution.append(i)
-    
-    return solution
+
+    solution1 = [];
+    solution2 = [];
+
+    for j in range(numFacilities):
+        if (x[j].X > .5):
+            solution1.append(j)
+
+    for i in range(numClients):
+        for j in range(numFacilities):
+            if (y[(i,j)].X > .5):
+                solution2.append([i,j])
+
+    return [solution1, solution2]
 
 print optimize(clients, facilities, charge)

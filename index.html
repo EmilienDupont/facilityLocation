@@ -131,11 +131,11 @@ aside {
 .c3 { fill: yellow; stroke: #999900 }
 .c4 { fill: gray; stroke: #404040 }
 
-.v0 { fill: blue; }
-.v1 { fill: green; }
-.v2 { fill: red; }
-.v3 { fill: yellow; }
-.v4 { fill: gray; }
+.v0 { stroke: blue; }
+.v1 { stroke: green; }
+.v2 { stroke: red; }
+.v3 { stroke: yellow; }
+.v4 { stroke: gray; }
 
 .place,
 .place-label {
@@ -592,11 +592,16 @@ function serverResponse(error, data) {
       if ('solution' in data) {
           // Import solution and put it into correct format
           var solution = data['solution'];
+          var solution1 = solution[0]; // Facilities to open
+          var solution2 = solution[1]; // Edges to draw
+
+          console.log('solution1', solution1);
+          console.log('solution2', solution2);
 
           var facilities = [];
 
-          for (var i = 0; i < solution.length; i++) {
-            facilities.push(sites[solution[i]]);
+          for (var i = 0; i < solution1.length; i++) {
+            facilities.push(sites[solution1[i]]);
           }
 
           facilitiesG.selectAll("circle").remove("circle");
@@ -641,8 +646,28 @@ function serverResponse(error, data) {
               .ease("out")
               .delay(function(d, i) { return i*100 + 300});
 
-          pathG.selectAll("path").remove("path");
+          pathG.selectAll("line").remove("line");
 
+          var connections = pathG.selectAll("line")
+                                 .data(solution2)
+                                 .enter()
+                                 .append("line")
+                                 .attr("x1", function(d) { var loc = vertices[d[0]]; return loc[0]; })
+                                 .attr("y1", function(d) { var loc = vertices[d[0]]; return loc[1]; })
+                                 .attr("x2", function(d) { var loc = sites[d[1]]; return loc[0]; })
+                                 .attr("y2", function(d) { var loc = sites[d[1]]; return loc[1]; })
+                                 .attr("class", function(d) {   console.log(d[1]);
+                                                                var n = solution1.indexOf(d[1]);
+                                                                return "v" + n % 5; })
+                                 .attr("stroke-width", 0)
+                                 .attr("opacity", 0);
+
+          connections.transition()
+                     .attr("opacity", .6)
+                     .attr("stroke-width", 3)
+                     .duration(500)
+                     .delay(1000);
+          /*
           var voroPath = pathG.selectAll("path")
                               .data(d3.geom.voronoi(facilities))
                               .enter()
@@ -655,7 +680,7 @@ function serverResponse(error, data) {
                   .transition()
                   .style("opacity", .5)
                   .duration(1000)
-                  .delay(1000);
+                  .delay(1000); */
         }
       }
 }
