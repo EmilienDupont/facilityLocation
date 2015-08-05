@@ -260,13 +260,13 @@ m.optimize()
       <p>
         Below is a visualization of our example. We are using the
         location data for a large supermarket chain in the UK,
-        visualizaing its outlets in Northern England.
+        visualizing its outlets in Northern England.
       </p>
 
       <p>
         The supermarkets are represented by:
         <svg height="20" width="20">
-	  <circle cx="10" cy="10" r="3" fill="black" opacity=".5" />
+	  <circle cx="10" cy="15" r="3" fill="black" opacity=".5" />
 	</svg>
       </p>
 
@@ -278,7 +278,8 @@ m.optimize()
 	</svg>
       </p>
       <p>
-        Warehouses are represented by:
+        Gurobi will then compute the locations where warehouse <em>will</em>
+        be built. These are represented by:
         <svg height="20" width="100">
 	  <circle cx="10" cy="10" r="8" stroke="#000099" stroke-width="3" fill="blue" />
           <circle cx="30" cy="10" r="8" stroke="#006600" stroke-width="3" fill="green" />
@@ -290,13 +291,12 @@ m.optimize()
 
       <p>
         Click "Compute Warehouse Locations" to find the optimal locations
-        using Gurobi. Every supermarket included in a colored area will be
-        served by the warehouse of the same color.
+        using Gurobi. Every supermarket will be linked to its warehouse.
       </p>
 
       <p>
-        A few supermarket locations have already been set up, but you can add
-        more by clicking the screen.
+        A few potential warehouse locations have already been set up, but
+        you can add more by clicking the screen.
       </p>
 
       <input type="range" min = 50 max = 5000 step = 1 id="cost" value="300" oninput="outputUpdate(value)" class="slider-width">
