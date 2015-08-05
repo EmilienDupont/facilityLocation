@@ -5,7 +5,7 @@ import math
 
 clients = [[100,200], [150,250], [650, 200], [50, 300]];
 
-facilities = []; charge = [];
+facilities = [[50,50]]; charge = [10];
 
 for i in range(10):
     for j in range(10):

@@ -21,7 +21,7 @@
 
 .site {
   fill: black;
-  opacity: 0;
+  opacity: .5;
 }
 
 .c0 { fill: blue; stroke: #000099 }
@@ -331,7 +331,7 @@ var vertices = [[427, 269.5], [434, 271.5], [431, 278.5], [459, 321.5],
 
 // Potential sites for facilities
 var sites = [];
-var n = 10;
+var n = 3;
 var cost = 300;
 for (var i = 1; i < n; i++) {
   for (var j = 1; j < n; j++) {
@@ -445,12 +445,13 @@ d3.json("USwithUrban.json", function(error, us) {
 
 function addPoint() {
   var point = d3.mouse(this);
-  vertices.push(point);
-  circleG.append("circle")
+  sites.push(point);
+  sitesG.append("circle")
          .attr("cx", point[0])
          .attr("cy", point[1])
-         .attr("class", "client")
-         .attr("r", 2);
+         .attr("class", "site")
+         .attr("r", 3);
+  charge.push(cost);
 
   // Add animation
   animationG.selectAll("circle").remove("circle");
@@ -466,8 +467,6 @@ function addPoint() {
       .attr("r", 20)
       .duration(200)
       .ease("out");
-
-  console.log('vertices', vertices);
 }
 
 // Function that actually joins the different points of polygon
@@ -476,6 +475,8 @@ function polygon(d) {
 }
 
 function compute() {
+  console.log('clients', vertices);
+  console.log('facilities', sites);
   d3.json('facility.py')
     .header('Content-Type', 'application/json')
     .post(JSON.stringify({'clients': vertices,
