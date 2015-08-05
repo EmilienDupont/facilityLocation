@@ -258,17 +258,25 @@ m.optimize()
       <h2><a href="#demo" name="demo">Live Demo</a></h2>
 
       <p>
-        Below is a visualization of our example for a supermarket company
-        operating in Arkansas and the surrounding states.
+        Below is a visualization of our example. We are using the
+        location data for a large supermarket chain in the UK,
+        visualizaing its outlets in Northern England.
       </p>
 
       <p>
-        Supermarkets are represented by:
+        The supermarkets are represented by:
         <svg height="20" width="20">
-	  <circle cx="10" cy="15" r="3" stroke="black" stroke-width="1" fill="white" />
+	  <circle cx="10" cy="10" r="3" fill="black" opacity=".5" />
 	</svg>
       </p>
 
+      <p>
+        By clicking the map you can add <em>potential</em> warehouse locations.
+        These are represented by:
+        <svg height="20" width="20">
+	  <circle cx="10" cy="10" r="8" stroke="black" stroke-width="1" fill="white" />
+	</svg>
+      </p>
       <p>
         Warehouses are represented by:
         <svg height="20" width="100">
@@ -291,9 +299,28 @@ m.optimize()
         more by clicking the screen.
       </p>
 
+      <input type="range" min = 50 max = 5000 step = 1 id="cost" value="300" oninput="outputUpdate(value)" class="slider-width">
+      <output for=cost id=costDisplay>300</output>
+      <script>
+      function outputUpdate(value) {
+        document.querySelector('#costDisplay').value = value;
+      }
+      </script>
+
       <div id="demoarea">
       </div>
       <button class="pure-button" onclick="compute()">Compute Warehouse Locations</button>
+
+      <p>
+        The supermarket location data was taken from the GeoLytix open source
+        dataset.
+        <ul>
+        <li>Supermarket Locations © GeoLytix copyright and database right 2014</li>
+        <li>Contains Ordnance Survey data © Crown copyright and database right 2014</li>
+        <li>Contains Royal Mail data © Royal Mail copyright and database right 2014</li>
+        <li>Contains National Statistics data © Crown copyright and database right 2014</li>
+        </ul>
+      </p>
     </div>
 
     <div style="min-height:100px"></div>
@@ -323,7 +350,7 @@ var svg = d3.select("#demoarea")
 
 // Potential sites for facilities
 var sites = [[.3*width, .8*height], [.4*width, .3*height]];
-var cost = 300;
+var cost = parseFloat(document.getElementById("cost").value);
 
 var charge = d3.range(sites.length).map(function(d) { return cost; });
 
@@ -420,8 +447,8 @@ d3.json("UKwithCounties.json", function(error, uk) {
             .style("text-anchor", function(d) { return d.geometry.coordinates[0] > -1 ? "start" : "end"; })
             .text(function(d) { return d.properties.name; });
 
-    // Set up supermarket locations (need to filter this data and push to vertices)
-
+    // Set up supermarket locations
+    // Add locations to vertices array
     circleG.selectAll("circle")
            .data(supermarket)
            .enter()
@@ -440,70 +467,6 @@ d3.json("UKwithCounties.json", function(error, uk) {
     console.log('number of vertices', vertices.length);
   });
 });
-
-/*
-// Add the map
-var projection = d3.geo.albers()
-    .center([0, 35])
-    .rotate([93.5, 0])
-    .parallels([50, 60])
-    .scale(6000)
-    .translate([2*width / 5 , 0.5*height]);
-
-var path = d3.geo.path()
-    .projection(projection)
-    .pointRadius(2);
-
-// Create color gradient for the map
-var mapColors = [];
-var maxRed = 222, minRed = 49;
-var maxGreen = 235, minGreen = 130;
-var maxBlue = 247, minBlue = 189;
-var numColors = 10;
-for (var i = 0; i < numColors; i++) {
-  var red = String( Math.round( minRed + (maxRed - minRed)*i/numColors ) );
-  var green = String( Math.round( minGreen + (maxGreen - minGreen)*i/numColors) );
-  var blue = String( Math.round( minBlue + (maxBlue - minBlue)*i/numColors ) );
-  mapColors.push( "rgb(" + red + "," + green + "," + blue + ")");
-}
-console.log(mapColors);
-
-d3.json("USwithUrban.json", function(error, us) {
-  var subunits = topojson.feature(us, us.objects.statesUSA),
-      places = topojson.feature(us, us.objects.placesUSA),
-      urban = topojson.feature(us, us.objects.urban);
-
-  mapG.selectAll(".subunit")
-      .data(subunits.features)
-      .enter().append("path")
-      .attr("fill", function(d,i) { return mapColors[i % 9];})
-      .attr("stroke", "white")
-      .attr("stroke-width", 1)
-      .attr("opacity", .8)
-      .attr("d", path);
-
-  mapG.append("path")
-      .datum(urban)
-      .attr("d", path)
-      .attr("fill", "black")
-      .attr("opacity", .1);
-
-  locationG.append("path")
-      .datum(places)
-      .attr("d", path)
-      .attr("class", "place");
-
-  locationG.selectAll(".place-label")
-      .data(places.features)
-      .enter().append("text")
-      .attr("class", "place-label")
-      .attr("transform", function(d) { return "translate(" + projection(d.geometry.coordinates) + ")"; })
-      .attr("x", function(d) { return d.geometry.coordinates[0] > -1 ? 6 : -6; })
-      .attr("dy", ".35em")
-      .style("text-anchor", function(d) { return d.geometry.coordinates[0] > -1 ? "start" : "end"; })
-      .text(function(d) { return d.properties.name; });
-}); */
-
 
 function addPoint() {
   var point = d3.mouse(this);
@@ -531,12 +494,12 @@ function addPoint() {
       .ease("out");
 }
 
-// Function that actually joins the different points of polygon
-function polygon(d) {
-  return "M" + d.join("L") + "Z";
-}
-
 function compute() {
+  cost = parseFloat(document.getElementById("cost").value);
+  charge = [];
+  for (var i = 0; i < sites.length; i++) {
+    charge.push(cost);
+  }
   console.log('clients', vertices);
   console.log('facilities', sites);
   d3.json('facility.py')
@@ -628,20 +591,6 @@ function serverResponse(error, data) {
                      .attr("stroke-width", 3)
                      .duration(500)
                      .delay(1000);
-          /*
-          var voroPath = pathG.selectAll("path")
-                              .data(d3.geom.voronoi(facilities))
-                              .enter()
-                              .append("path")
-                              .attr("d", polygon)
-                              .attr("class", function(d, i) { return "v" + i % 5; })
-                              .attr("stroke-opacity", 0);
-
-          voroPath.style("opacity", 0)
-                  .transition()
-                  .style("opacity", .5)
-                  .duration(1000)
-                  .delay(1000); */
         }
       }
 }
