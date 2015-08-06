@@ -3,14 +3,21 @@
 from gurobipy import *
 import math
 
-clients = [[100,200], [150,250], [650, 200], [50, 300]];
+logStr = [] # Will contain string of each line of log message
 
-facilities = [[50,50]]; charge = [10];
+clients = [[100,200], [150,250], [650, 200], [50, 300]]
+
+facilities = []; charge = []
 
 for i in range(10):
     for j in range(10):
         facilities.append([i*70, j*50])
         charge.append(1)
+
+def mycallback(model, where):
+    if where == GRB.callback.MESSAGE:
+        global logStr
+        logStr.append( model.cbGet(GRB.callback.MSG_STRING) )
 
 def distance(a,b):
     dx = a[0] - b[0]
@@ -53,10 +60,10 @@ def optimize(clients, facilities, charge, output=False):
     m.setObjective( quicksum( charge[j]*x[j] + quicksum(d[(i,j)]*y[(i,j)] for i in range(numClients))
                              for j in range(numFacilities) ), GRB.MINIMIZE)
 
-    m.optimize()
+    m.optimize(mycallback)
 
-    solution1 = [];
-    solution2 = [];
+    solution1 = []
+    solution2 = []
 
     for j in range(numFacilities):
         if (x[j].X > .5):
@@ -67,7 +74,7 @@ def optimize(clients, facilities, charge, output=False):
             if (y[(i,j)].X > .5):
                 solution2.append([i,j])
 
-    return [solution1, solution2]
+    return [solution1, solution2, logStr]
 
 def handleoptimize(jsdict):
     if 'clients' in jsdict and 'facilities' in jsdict and 'charge' in jsdict:

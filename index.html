@@ -309,8 +309,8 @@ m.optimize()
 
       Cost to build warehouse:
       <p>
-        <input type="range" min = 50000 max = 5000000 step = 500 id="cost" value="1400000" oninput="outputUpdate(value)" class="slider-width">
-        <output for=cost id=costDisplay>1400000</output> pounds
+        <input type="range" min = 500000 max = 3000000 step = 500000 id="cost" value="1500000" oninput="outputUpdate(value)" class="slider-width">
+        <output for=cost id=costDisplay>1500000</output> pounds
         <script>
         function outputUpdate(value) {
           document.querySelector('#costDisplay').value = value;
@@ -321,6 +321,27 @@ m.optimize()
       <div id="demoarea">
       </div>
       <button class="pure-button" onclick="compute()">Compute Warehouse Locations</button>
+
+      <p>
+        <button class="pure-button" onclick="toggle_div()">Gurobi Log</button>
+      </p>
+
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+      <script>
+        function toggle_div() {
+          var logfile = d3.select('#logfile');
+          if (logfile.style("display") === "none") {
+            logfile.style("display", "inline");
+          } else {
+            logfile.style("display", "none");
+          }
+
+        }
+      </script>
+
+      <div id=logfile>
+      </div>
 
       <p style="font-size:8px">
         <a name="geolytix">Location data:</a>
@@ -344,6 +365,9 @@ m.optimize()
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script>
 
+// Hide Log File intially
+d3.select('#logfile').style("display", "none");
+
 //Width and height
 var width = 800;
 var height = 500;
@@ -353,6 +377,11 @@ var price_per_px = 3*miles_per_px;
 var alpha = 5*365*price_per_px; // Consider the cost over 5 years
 
 var svg = d3.select("#demoarea")
+              .append("svg")
+              .attr("width", width)
+              .attr("height", height);
+
+var logsvg = d3.select("#logfile")
               .append("svg")
               .attr("width", width)
               .attr("height", height);
@@ -548,9 +577,15 @@ function serverResponse(error, data) {
           var solution = data['solution'];
           var solution1 = solution[0]; // Facilities to open
           var solution2 = solution[1]; // Edges to draw
+          var logMsg = solution[2]; // Log message to display
 
-          console.log('solution1', solution1);
-          console.log('solution2', solution2);
+          logsvg.selectAll("text")
+                .data(logMsg)
+                .enter()
+                .append("text")
+                .attr("x", 10)
+                .attr("y", function(d,i) { return (i+1)*15; })
+                .text(function(d) { return d; });
 
           var facilities = [];
 
@@ -610,8 +645,7 @@ function serverResponse(error, data) {
                                  .attr("y1", function(d) { var loc = vertices[d[0]]; return loc[1]; })
                                  .attr("x2", function(d) { var loc = sites[d[1]]; return loc[0]; })
                                  .attr("y2", function(d) { var loc = sites[d[1]]; return loc[1]; })
-                                 .attr("class", function(d) {   console.log(d[1]);
-                                                                var n = solution1.indexOf(d[1]);
+                                 .attr("class", function(d) {   var n = solution1.indexOf(d[1]);
                                                                 return "v" + n % 5; })
                                  .attr("stroke-width", 0)
                                  .attr("opacity", 0);
