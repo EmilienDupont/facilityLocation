@@ -578,14 +578,19 @@ function serverResponse(error, data) {
           var solution1 = solution[0]; // Facilities to open
           var solution2 = solution[1]; // Edges to draw
           var logMsg = solution[2]; // Log message to display
-
+          /*
           logsvg.selectAll("text")
                 .data(logMsg)
                 .enter()
                 .append("text")
                 .attr("x", 10)
                 .attr("y", function(d,i) { return (i+1)*15; })
-                .text(function(d) { return d; });
+                .text(function(d) { return d; }); */
+
+          logsvg.append("text")
+                .attr("x", 10)
+                .attr("y", 30)
+                .text(logMsg);
 
           var facilities = [];
 

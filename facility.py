@@ -2,8 +2,7 @@
 
 from gurobipy import *
 import math
-
-logStr = [] # Will contain string of each line of log message
+import StringIO
 
 clients = [[100,200], [150,250], [650, 200], [50, 300]]
 
@@ -16,8 +15,7 @@ for i in range(10):
 
 def mycallback(model, where):
     if where == GRB.callback.MESSAGE:
-        global logStr
-        logStr.append( model.cbGet(GRB.callback.MSG_STRING) )
+        print >>model.__output, model.cbGet(GRB.callback.MSG_STRING),
 
 def distance(a,b):
     dx = a[0] - b[0]
@@ -60,6 +58,9 @@ def optimize(clients, facilities, charge, output=False):
     m.setObjective( quicksum( charge[j]*x[j] + quicksum(d[(i,j)]*y[(i,j)] for i in range(numClients))
                              for j in range(numFacilities) ), GRB.MINIMIZE)
 
+    output = StringIO.StringIO()
+    m.__output = output
+
     m.optimize(mycallback)
 
     solution1 = []
@@ -74,7 +75,7 @@ def optimize(clients, facilities, charge, output=False):
             if (y[(i,j)].X > .5):
                 solution2.append([i,j])
 
-    return [solution1, solution2, logStr]
+    return [solution1, solution2, output.getvalue()]
 
 def handleoptimize(jsdict):
     if 'clients' in jsdict and 'facilities' in jsdict and 'charge' in jsdict:
