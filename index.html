@@ -340,8 +340,8 @@ m.optimize()
         }
       </script>
 
-      <div id=logfile>
-      </div>
+      <examplecode id=logfile>
+      </examplecode>
 
       <p style="font-size:8px">
         <a name="geolytix">Location data:</a>
@@ -377,11 +377,6 @@ var price_per_px = 3*miles_per_px;
 var alpha = 5*365*price_per_px; // Consider the cost over 5 years
 
 var svg = d3.select("#demoarea")
-              .append("svg")
-              .attr("width", width)
-              .attr("height", height);
-
-var logsvg = d3.select("#logfile")
               .append("svg")
               .attr("width", width)
               .attr("height", height);
@@ -581,17 +576,7 @@ function serverResponse(error, data) {
 
           console.log('message', logMsg);
 
-          var contents = logMsg.split('\n');
-
-          logsvg.selectAll("text").remove("text");
-
-          logsvg.selectAll("text")
-                .data(contents)
-                .enter()
-                .append("text")
-                .attr("x", 10)
-                .attr("y", function(d,i) { return (i+1)*15; })
-                .text(function(d) { return d; });
+          d3.select('#logfile').html(logMsg);
 
           var facilities = [];
 
