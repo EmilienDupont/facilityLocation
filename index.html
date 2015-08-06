@@ -263,7 +263,7 @@ m.optimize()
 
       <p>
         Below is a visualization of our example. We are using the
-        location data from <a href="#geolytix">GeoLytix</a> of large
+        location data from <a href="#geolytix">GeoLytix</a> for a large
         supermarket chain in the UK, and visualizing its outlets in
         Northern England.
       </p>
@@ -283,8 +283,8 @@ m.optimize()
 	</svg>
       </p>
       <p>
-        Click "Compute Warehouse Locations" to use Gurobi to find the locations
-        where warehouses <em>will</em> be built. These will be represented by:
+        Click "Compute Warehouse Locations" to find the locations where warehouses
+        <em>will</em> be built using Gurobi. These will be represented by:
         <svg height="20" width="100">
 	  <circle cx="10" cy="10" r="8" stroke="#000099" stroke-width="3" fill="blue" />
           <circle cx="30" cy="10" r="8" stroke="#006600" stroke-width="3" fill="green" />
@@ -303,14 +303,14 @@ m.optimize()
         The cost of transportation per mile is kept constant at 3 pounds/mile
         but you can use the slider to vary the cost of building a warehouse.
         When the cost is low, many facilities will be built. When the cost
-        is high it will dominate the transportation cost and there will be
+        is high, it will dominate the transportation cost and there will be
         fewer facilities with greater driving distances.
       </p>
 
       Cost to build warehouse:
       <p>
-        <input type="range" min = 50000 max = 5000000 step = 500 id="cost" value="300000" oninput="outputUpdate(value)" class="slider-width">
-        <output for=cost id=costDisplay>300000</output> pounds
+        <input type="range" min = 50000 max = 5000000 step = 500 id="cost" value="1400000" oninput="outputUpdate(value)" class="slider-width">
+        <output for=cost id=costDisplay>1400000</output> pounds
         <script>
         function outputUpdate(value) {
           document.querySelector('#costDisplay').value = value;
@@ -358,7 +358,9 @@ var svg = d3.select("#demoarea")
               .attr("height", height);
 
 // Potential sites for facilities
-var sites = [[.3*width, .8*height], [.4*width, .3*height]];
+var sites = [[.3*width, .8*height], [.4*width, .3*height], [516.40625, 380.34375],
+             [486.40625, 55.34375], [766.40625, 179.34375], [728.40625, 439.34375]];
+
 var cost = parseFloat(document.getElementById("cost").value)/alpha;
 
 var charge = d3.range(sites.length).map(function(d) { return cost; });
@@ -493,6 +495,7 @@ function addPoint() {
   pathG.selectAll("line").remove("line");
 
   var point = d3.mouse(this);
+  console.log('point', point);
   sites.push(point);
   sitesG.append("circle")
          .attr("cx", point[0])
