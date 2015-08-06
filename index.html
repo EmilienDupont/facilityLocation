@@ -374,6 +374,9 @@ var facilitiesG = svg.append("g");
 // G object for location names
 var locationG = svg.append("g");
 
+// G object for clickable areas
+var clickableG = svg.append("g");
+
 backgroundG.append("rect")
            .attr("x", 0).attr("y", 0)
            .attr("width", width).attr("height", height)
@@ -425,7 +428,14 @@ d3.json("UKwithCounties.json", function(error, uk) {
         .append("path")
         .attr("d", path)
         .attr("fill", function(d,i) { return mapColors[i % 9]; })
-        .attr("stroke", "rgb(150,150,150)")
+        .attr("stroke", "rgb(150,150,150)");
+
+    clickableG.selectAll("path")
+        .data(counties)
+        .enter()
+        .append("path")
+        .attr("d", path)
+        .attr("opacity", 0)
         .on("mousedown", addPoint);
 
     locationG.append("path")
@@ -465,6 +475,10 @@ d3.json("UKwithCounties.json", function(error, uk) {
 });
 
 function addPoint() {
+  facilitiesG.selectAll("circle").remove("circle");
+  animationG.selectAll("circle").remove("circle");
+  pathG.selectAll("line").remove("line");
+
   var point = d3.mouse(this);
   sites.push(point);
   sitesG.append("circle")
@@ -491,6 +505,10 @@ function addPoint() {
 }
 
 function compute() {
+  facilitiesG.selectAll("circle").remove("circle");
+  animationG.selectAll("circle").remove("circle");
+  pathG.selectAll("line").remove("line");
+
   cost = parseFloat(document.getElementById("cost").value);
   charge = [];
   for (var i = 0; i < sites.length; i++) {
