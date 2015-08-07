@@ -614,6 +614,10 @@ function serverResponse(error, data) {
 
           // Import solution and put it into correct format
           var solution = data['solution'];
+          if (solution[0] === "error") {
+            alert("Time limit exceeded. Reduce the size of the problem.");
+            return;
+          }
           var solution1 = solution[0]; // Facilities to open
           var solution2 = solution[1]; // Edges to draw
           var logMsg = solution[2]; // Log message to display

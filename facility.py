@@ -28,6 +28,7 @@ def optimize(clients, facilities, charge, output=False):
     numClients = len(clients)
 
     m = Model()
+    m.setParam('TimeLimit', 0.1)
 
     if not output:
         m.params.OutputFlag = 0
@@ -62,6 +63,9 @@ def optimize(clients, facilities, charge, output=False):
     m.__output = output
 
     m.optimize(mycallback)
+
+    if (m.status != 2):
+        return ["error"]
 
     solution1 = []
     solution2 = []
