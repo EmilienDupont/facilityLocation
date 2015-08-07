@@ -28,10 +28,11 @@ def optimize(clients, facilities, charge, output=False):
     numClients = len(clients)
 
     m = Model()
-    m.setParam('TimeLimit', 0.1)
 
     if not output:
         m.params.OutputFlag = 0
+
+    m.setParam('TimeLimit', 0.1)
 
     # Add variables
     x = {}
