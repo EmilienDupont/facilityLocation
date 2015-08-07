@@ -321,10 +321,10 @@ m.optimize()
       Cost to build warehouse:
       <p>
         <input type="range" min = 500000 max = 3000000 step = 500000 id="cost" value="1500000" oninput="outputUpdate(value)" class="slider-width">
-        <output for=cost id=costDisplay>1500000</output> pounds
+        <output for=cost id=costDisplay>1.5</output> million pounds
         <script>
         function outputUpdate(value) {
-          document.querySelector('#costDisplay').value = value;
+          document.querySelector('#costDisplay').value = value/1000000;
         }
         </script>
       </p>
