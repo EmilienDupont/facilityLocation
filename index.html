@@ -615,7 +615,7 @@ function serverResponse(error, data) {
           // Import solution and put it into correct format
           var solution = data['solution'];
           if (solution[0] === "error") {
-            alert("Time limit exceeded. Reduce the size of the problem.");
+            alert("10 second solve time limit exceeded. Reduce the number of the candidate facilities.");
             return;
           }
           var solution1 = solution[0]; // Facilities to open
