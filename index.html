@@ -603,15 +603,16 @@ function compute() {
 }
 
 function serverResponse(error, data) {
-   console.log('serverResponse');
-   console.log('data', data);
-   if (!error) {
-      if ('solution' in data) {
-          // Remove loading screen
-          spinnerG.selectAll("rect").remove("rect");
-          spinnerG.selectAll("text").remove("text");
-          spinner.stop();
+  console.log('serverResponse');
+  console.log('data', data);
 
+  // Remove loading screen
+  spinnerG.selectAll("rect").remove("rect");
+  spinnerG.selectAll("text").remove("text");
+  spinner.stop();
+
+  if (!error) {
+      if ('solution' in data) {
           // Import solution and put it into correct format
           var solution = data['solution'];
           if (solution[0] === "error") {
