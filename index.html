@@ -84,10 +84,10 @@
     </div>
 
     <p>
-      A large supermarket chain needs to build warehouses for a set of
-      supermarkets it is opening. The locations of the supermarkets
-      have been decided, but the locations of the warehouses are yet
-      to be chosen.
+      A large supermarket chain in the UK needs to build warehouses
+      for a set of supermarkets it is opening in Northern England.
+      The locations of the supermarkets have been decided, but the
+      locations of the warehouses are yet to be chosen.
     </p>
 
     <p>
@@ -104,8 +104,7 @@
       Opening many warehouses would be advantageous as this would
       reduce the average distance a truck has to drive from
       warehouse to supermarket, and hence reduce the delivery cost.
-      Opening a warehouse is, however, costly. We therefore have a
-      tradeoff between the delivery cost and the building cost.
+      Opening a warehouse is, however, costly.
     </p>
 
     <p>
@@ -163,7 +162,7 @@
       <p>
         We can simplify the expression for total cost. $c_{ij}$ is usually
         proportional to the distance $d_{ij}$ between the facility and the
-        customer, i.e. $c_{ij} = \alpha d_{ij}$, so we can replace
+        customer, i.e. $c_{ij} = \alpha d_{ij}$. So we can replace
         $c_{ij}$ with $d_{ij}$ (which we take to be the euclidean distance
         between customer $i$ and facility $j$) and absorb the constant
         $\alpha$ into $f_j$ (by scaling $f_j$ by $1 / \alpha$).
@@ -171,7 +170,7 @@
 
       <p>
         It is useful to take some time to understand the units of the
-        objective. Clearly, the cost will have units of a currency
+        objective. Clearly, the cost will have units of currency
         (e.g. pounds). The cost $f_j$ of building a facility will also be
         in pounds. Now $d_{ij}$ will have units of distance, say miles. For
         the objective to be homogeneous, we would therefore need $\alpha$
@@ -182,7 +181,7 @@
         warehouse once, but we pay the driving costs everytime a truck
         travels between the warehouse and a supermarket. We need to incorporate
         this into the $\alpha$ factor, so we multiply $\alpha$ by the expected
-        number of trips a truck would make over a 5 year period for example.
+        number of trips a truck would make over a 5 year period, for example.
         We would then be measuring the tradeoff between the cost of building
         a new warehouse and the total delivery costs over a 5 year period.
       </p>
@@ -202,7 +201,7 @@
       </p>
 
       <p>
-        We end up with the following problem in the variables $x_j$ and $y_{ij}$
+        We end up with the following model in the variables $x_j$ and $y_{ij}$
         \[
         \begin{array}{ll}
         \text{minimize} & \sum_{j \in J} f_j x_j + \sum_{j \in J} \sum_{i \in I} d_{ij} y_{ij} \\
@@ -311,7 +310,7 @@ m.optimize()
       </p>
 
       <p>
-        The cost of transportation 3 pounds/mile. You can use the slider to
+        The cost of transportation  is 3 pounds/mile. You can use the slider to
         vary the cost of building a warehouse. When the cost is low, many
         facilities will be built. When the cost is high, it will dominate the
         transportation cost and there will be fewer facilities with greater
