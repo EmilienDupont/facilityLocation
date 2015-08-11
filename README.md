@@ -12,7 +12,7 @@ An example of using Gurobi to solve a facility location problem
 
 2. Point your browser at http://localhost:8000
 
-3. Add some clients by clicking your mouse in the demo area.
+3. Click on the screen to add potential facility locations.
 
 4. Click "Compute" to locate the facilities.
 
@@ -23,4 +23,3 @@ To just solve the model (without running a web server) do:
 ```
 make test
 ```
-
