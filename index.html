@@ -333,6 +333,7 @@ m.optimize()
       <div id="spinnerdiv">
       </div>
       <button class="pure-button" onclick="compute()">Compute Warehouse Locations</button>
+      <button onclick="restart()">Restart</button>
 
       <p>
         <button class="pure-button" onclick="toggle_div()">Gurobi Log</button>
@@ -566,6 +567,12 @@ function addPoint() {
 }
 
 function compute() {
+
+  if (sites.length < 1) {
+    alert("Add potential sites to compute the optimal facility locations!");
+    return;
+  }
+
   facilitiesG.selectAll("circle").remove("circle");
   animationG.selectAll("circle").remove("circle");
   pathG.selectAll("line").remove("line");
@@ -694,6 +701,15 @@ function serverResponse(error, data) {
                      .delay(1000);
         }
       }
+}
+
+
+function restart() {
+  sitesG.selectAll("circle").remove("circle");
+  facilitiesG.selectAll("circle").remove("circle");
+  animationG.selectAll("circle").remove("circle");
+  pathG.selectAll("line").remove("line");
+  sites = [];
 }
 
 </script>
