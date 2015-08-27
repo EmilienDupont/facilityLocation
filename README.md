@@ -16,10 +16,3 @@ An example of using Gurobi to solve a facility location problem
 
 4. Click "Compute" to locate the facilities.
 
-# Performing an optimization
-
-To just solve the model (without running a web server) do:
-
-```
-make test
-```
