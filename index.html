@@ -134,8 +134,8 @@ a:hover.screenshot {
         <a href="http://www.sciencedirect.com/science/article/pii/S0377221703008191">
         Uncapacitated Facility Location Problem</a>. There are many
         different types of facility location problems, see for example
-        the book <a href="http://www.springer.com/us/book/9783540421726">
-        Facility Location: Applications and Theory</a> for more details.
+        the book <i><a href="http://www.springer.com/us/book/9783540421726">
+        Facility Location: Applications and Theory</a></i> for more details.
       </p>
 
       <p>
@@ -243,8 +243,8 @@ def distance(a,b):
 
 # Problem data
 clients = [[0, 1.5],[2.5, 1.2]]
-facilities = [[0,0],[0,1],[0,1]
-              [1,0],[1,1],[1,2]
+facilities = [[0,0],[0,1],[0,1],
+              [1,0],[1,1],[1,2],
               [2,0],[2,1],[2,2]]
 charge = [3,2,3,1,3,3,4,3,2]
 
@@ -276,7 +276,8 @@ for i in range(numClients):
 for i in range(numClients):
   m.addConstr(quicksum(y[(i,j)] for j in range(numFacilities)) == 1)
 
-m.setObjective( quicksum( charge[j]*x[j] + quicksum(d[(i,j)]*y[(i,j)] for i in range(numClients)) for j in range(numFacilities)))
+m.setObjective( quicksum(charge[j]*x[j] + quicksum(d[(i,j)]*y[(i,j)]
+                for i in range(numClients)) for j in range(numFacilities)) )
 
 m.optimize()
 </examplecode>
