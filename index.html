@@ -118,7 +118,7 @@ a:hover.screenshot {
       Opening many warehouses would be advantageous as this would
       reduce the average distance a truck has to drive from
       warehouse to supermarket, and hence reduce the delivery cost.
-      Opening a warehouse is, however, costly.
+      However, opening a warehouse is costly.
     </p>
 
     <p>
@@ -134,22 +134,22 @@ a:hover.screenshot {
         Our example is an instance of the
         <a href="http://www.sciencedirect.com/science/article/pii/S0377221703008191">
         Uncapacitated Facility Location Problem</a>. There are many
-        different types of facility location problems, see for example
-        the book <i><a href="http://www.springer.com/us/book/9783540421726">
-        Facility Location: Applications and Theory</a></i> for more details.
+        different types of facility location problems. For more details,
+        see the book <i><a href="http://www.springer.com/us/book/9783540421726">
+        Facility Location: Applications and Theory</a></i>.
       </p>
 
       <p>
         Let us now formulate a mathematical model for our problem.
         Let $I$ be the set of supermarket (or <em>customer</em>) locations.
         Let $J$ be the set of candidate warehouse (or <em>facility</em>)
-        locations. The goal is to choose which of the points in $J$ should
+        locations. The goal is to choose which locations in $J$ should
         be used to construct a facility. Therefore, for each location we
-        define a binary variable $x_j$
+        define a binary variable
         \[
         x_j = \left\{\begin{array}{ll}
-               1 & \text{if we locate facility at candidate site $j \in J$ }\\
-               0 & \mathrm{otherwise}
+               1 & \text{if we locate facility at candidate site $j \in J$, }\\
+               0 & \mathrm{otherwise.}
               \end{array}\right.
         \]
       </p>
@@ -159,70 +159,63 @@ a:hover.screenshot {
         denote this fixed charge by $f_j$.
       </p>
 
+      <p>We also define continuous variables $y_{ij}$ to be the
+        fraction of supply received by customer $i$ from facility $j$.
+        These quantities are positive, so we have the constraints:
+        \[
+          y_{ij} \ge 0, \quad \forall i \in I, j \in J.
+        \]
+      </p>
+
       <p>
         We denote by $c_{ij}$ the cost of shipping between candidate
-        warehouse site $j$ and supermarket location $i$. The fraction
-        of supply received by customer $i$ from facility $j$ is denoted
-        by $y_{ij}$. This quantity has to be positive, so we have the
-        constraint $y_{ij} \geq 0$. We wish to minimize the total cost,
-        i.e. the sum of the cost of opening facilities and the cost
-        related to shipping between facilities and clients.
-        So the total cost is:
+        warehouse site $j$ and supermarket location $i$. This
+        cost is usually proportional to the distance $d_{ij}$ between
+        the facility and the customer:
         \[
-        \text{total cost} = \sum_{j \in J} f_j x_j + \sum_{j \in J} \sum_{i \in I} c_{ij} y_{ij}
+          c_{ij} = \alpha d_{ij}
+        \]
+        The constant $\alpha$ is the cost per mile of driving, adjusted
+        to incorporate the average number of a trips a delivery truck
+        would be expected to make over a 5 year period.
+      </p>
+
+      <p>
+        We wish to minimize the total cost to open and operate the
+        facilites. This is the sum of the cost of opening facilities
+        and the cost related to shipping between facilities and
+        customers:
+        \[
+        \text{total cost} = \sum_{j \in J} f_j x_j + \sum_{j \in J} \sum_{i \in I} c_{ij} y_{ij}.
+        \]
+        This total cost measures the tradeoff between the cost of building
+        a new warehouse and the total delivery cost over a 5 year period.
+      </p>
+
+      <p>
+        Finally, we need to add two constraints. First, the demand for each
+        customer must be fulfilled. That is, the sum of the fraction received
+        from each facility for each customer must be equal to 1:
+        \[
+        \sum_{j \in J} y_{ij} = 1, \quad \forall i \in I.
+        \]
+        Second, we can only ship from facility $j$ if that facility has
+        actually been built. So we have the following constraints:
+        \[
+        y_{ij} \leq x_{ij}, \quad \forall i \in I \quad \forall j \in J.
         \]
       </p>
 
       <p>
-        We can simplify the expression for total cost. $c_{ij}$ is usually
-        proportional to the distance $d_{ij}$ between the facility and the
-        customer, i.e. $c_{ij} = \alpha d_{ij}$. So we can replace
-        $c_{ij}$ with $d_{ij}$ (which we take to be the euclidean distance
-        between customer $i$ and facility $j$) and absorb the constant
-        $\alpha$ into $f_j$ (by scaling $f_j$ by $1 / \alpha$).
-      </p>
-
-      <p>
-        It is useful to take some time to understand the units of the
-        objective. Clearly, the cost will have units of currency
-        (e.g. pounds). The cost $f_j$ of building a facility will also be
-        in pounds. Now $d_{ij}$ will have units of distance, say miles. For
-        the objective to be homogeneous, we would therefore need $\alpha$
-        to have units of cost per mile. This would, however, not be entirely
-        correct. Indeed, in this case we would be measuring the tradeoff
-        between building a facility and travelling the distance $d_{ij}$
-        <em>once</em>. Clearly, we only pay the charge for building the
-        warehouse once, but we pay the driving costs everytime a truck
-        travels between the warehouse and a supermarket. We need to incorporate
-        this into the $\alpha$ factor, so we multiply $\alpha$ by the expected
-        number of trips a truck would make over a 5 year period, for example.
-        We would then be measuring the tradeoff between the cost of building
-        a new warehouse and the total delivery costs over a 5 year period.
-      </p>
-
-      <p>
-        Finally, we need to add 2 constraints. Firstly, the demand for each
-        customer must be supported, i.e. the sum of the fraction received
-        from each facility for client $i$ must be equal to 1
-        \[
-        \sum_{j \in J} y_{ij} = 1 \quad \forall i \in I
-        \]
-        Secondly, we can only ship from facility $j$ if the facility has
-        actually been built. So we have the following constraint
-        \[
-        y_{ij} \leq x_{ij} \quad \forall i \in I \quad \forall j \in J
-        \]
-      </p>
-
-      <p>
-        We end up with the following model in the variables $x_j$ and $y_{ij}$
+        Thus, the uncapacitated facility location problem is defined
+        by the following model in the variables $x_j$ and $y_{ij}$:
         \[
         \begin{array}{ll}
-        \text{minimize} & \sum_{j \in J} f_j x_j + \sum_{j \in J} \sum_{i \in I} d_{ij} y_{ij} \\
-        \text{subject to} & \sum_{j \in J} y_{ij} = 1 \\
-                          & y_{ij} \leq x_{ij}  \\
-                          & y_{ij} \geq 0  \\
-                          & x_j \in \{ 0, 1 \}
+        \text{minimize}   & {\displaystyle \sum_{j \in J} f_j x_j + \sum_{j \in J} \sum_{i \in I} c_{ij} y_{ij}} \\
+        \text{subject to} & {\displaystyle \sum_{j \in J} y_{ij}} = 1, \quad \forall i \in I, \\
+                          & y_{ij} \leq x_{ij}, \quad \forall i \in I, \forall j \in J,  \\
+                          & y_{ij} \geq 0, \quad \forall i \in I, \forall j \in J, \\
+                          & x_j \in \{ 0, 1 \}, \quad \forall j \in J.
         \end{array}
         \]
       </p>
@@ -258,6 +251,7 @@ m = Model()
 x = {}
 y = {}
 d = {} # Distance matrix (not a variable)
+alpha = 1
 
 for j in range(numFacilities):
   x[j] = m.addVar(vtype=GRB.BINARY, name="x%d" % j)
@@ -277,7 +271,7 @@ for i in range(numClients):
 for i in range(numClients):
   m.addConstr(quicksum(y[(i,j)] for j in range(numFacilities)) == 1)
 
-m.setObjective( quicksum(charge[j]*x[j] + quicksum(d[(i,j)]*y[(i,j)]
+m.setObjective( quicksum(charge[j]*x[j] + quicksum(alpha*d[(i,j)]*y[(i,j)]
                 for i in range(numClients)) for j in range(numFacilities)) )
 
 m.optimize()
